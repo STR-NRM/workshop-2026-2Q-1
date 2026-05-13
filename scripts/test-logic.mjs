@@ -177,7 +177,11 @@ globalThis.fetch = async (url, options) => {
   const body = JSON.parse(options.body);
   assert.match(body.input, /한 장의 편지/);
   assert.match(body.input, /오직 한 장의 편지만 담습니다/);
-  assert.match(body.input, /마음이 많이 쓰였을 것 같습니다/);
+  assert.match(body.input, /따뜻하고 배려 깊고 정중한 상담자/);
+  assert.match(body.input, /비유는 쓰면 좋습니다/);
+  assert.match(body.input, /암호처럼 느껴지는 추상적 비유만 쓰면 안 됩니다/);
+  assert.match(body.input, /특정 위로 문구를 반복하지 말고/);
+  assert.doesNotMatch(body.input, /~하느라 마음이 많이 쓰였을 것 같습니다/);
   assert.match(body.input, /바로 "# 한 장의 편지"로 시작/);
   assert.doesNotMatch(body.input, /직무별 메시지는 반드시 blockquote/);
   assert.doesNotMatch(body.input, /PM\/제품 담당 분들께/);
@@ -203,8 +207,10 @@ globalThis.fetch = async (url, options) => {
   assert.match(body.input, /프론트엔드 분들께/);
   assert.match(body.input, /백엔드 분들께/);
   assert.match(body.input, /blockquot/i);
-  assert.match(body.input, /고생이 많으셨을 것 같습니다/);
-  assert.match(body.input, /마음이 쓰입니다/);
+  assert.match(body.input, /고정 문구처럼 반복하지 마세요/);
+  assert.match(body.input, /역할별 상황에 맞게 자연스럽게 변주/);
+  assert.match(body.input, /그대로 복사하지 말고 상황에 맞게 새로 쓰세요/);
+  assert.doesNotMatch(body.input, /첫 두 문장은 반드시 응답 기반 공감/);
   assert.doesNotMatch(body.input, /한 장의 편지만 담습니다/);
   assert.doesNotMatch(body.input, /반드시 "# Executive Summary"로 시작하세요/);
   return {
