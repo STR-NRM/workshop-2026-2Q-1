@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.6 GitHub Pages 정적 배포 기준 AI 분석 단순화. Firebase Functions 의존 제거.
+- 업데이트 내용: v1.7 결과 화면 요약/우선신호/문항별 시각화 개선, AI 리포트 3개 화면 분리.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` production-ready 개발
 
@@ -65,10 +65,10 @@
 - [x] 서술형 원문 결과 화면 표시
 - [x] CSV/JSON export 구현
 - [x] AI 분석 결과 표시 구현
-- [x] 결과 화면 버튼 기반 AI 분석 생성 경로 구현
+- [x] 종합/비주관식/주관식 AI 리포트 화면과 생성 버튼 분리
 - [x] 브라우저 OpenAI Responses API 분석 경로 작성
 - [x] AI 분석 결과 Firebase 저장 경로 작성
-- [x] Executive Summary로 시작하는 전문가 검토형 리포트 프롬프트 작성
+- [x] 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트 작성
 - [x] 긴 AI 리포트를 읽기 쉬운 섹션/목록/표 형태로 표시
 
 ### Phase 5. 검증 루프
@@ -120,7 +120,7 @@
 ## 2. 완료 기준
 
 - 4Q Firebase 키, 4Q 문구, 4Q 프롬프트, 빌드 환경변수 OpenAI key embedding 방식이 app code에 남아 있지 않다.
-- 결과 화면 버튼 외의 별도 AI 분석 실행 경로가 사용자 플로우와 문서에 남아 있지 않다.
+- 종합/비주관식/주관식 AI 리포트는 각각 별도 화면과 별도 생성 버튼을 갖는다.
 - 설문 문항과 라우팅이 `07_final_question_bank_source_of_truth.md`와 일치한다.
 - Firebase 없이도 localStorage fallback으로 로컬 QA가 가능하다.
 - Firebase 설정 후에는 모든 팀원이 별도 설정 없이 응답하고 결과를 볼 수 있다.

@@ -53,11 +53,11 @@ npm run build
 
 ## AI Analysis
 
-AI analysis runs from the result page by clicking `AI 분석 생성/갱신`. The facilitator enters an OpenAI API key in the result page, the browser sends anonymized aggregate survey data to the OpenAI Responses API, and the generated report is saved to Firebase Realtime Database.
+AI analysis runs from the result page through three separate report tabs: `AI 종합`, `AI 비주관식`, and `AI 주관식`. The facilitator enters an OpenAI API key in the selected report tab, the browser sends the relevant anonymized aggregate survey data to the OpenAI Responses API, and the generated report is saved to Firebase Realtime Database.
 
 This keeps GitHub Pages deployment simple and avoids Firebase Cloud Functions/Blaze requirements. The OpenAI key is not committed, not added to GitHub Actions secrets, and not saved to Firebase. It is used only for that browser request.
 
-The report prompt requires an `Executive Summary` first and asks for a structured expert-review style report covering organization, product, engineering collaboration, risks, and 4-week experiments.
+Each report prompt requires an `Executive Summary` first, with a one-sentence conclusion, an easy analysis summary, and 3-5 action bullets before detailed sections.
 
 Do not commit `.env.local`, OpenAI keys, Firebase service account JSON files, or GitHub tokens.
 

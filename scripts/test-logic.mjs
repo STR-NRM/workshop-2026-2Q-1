@@ -99,6 +99,10 @@ globalThis.fetch = async (url, options) => {
   assert.equal(body.model, 'gpt-5.5');
   assert.equal(body.reasoning.effort, 'high');
   assert.match(body.input, /# Executive Summary/);
+  assert.match(body.input, /한 문장 결론/);
+  assert.match(body.input, /그래서 무엇을 해야 하나/);
+  assert.match(body.input, /한문장 정리/);
+  assert.match(body.input, /한문장 제안/);
   assert.match(body.input, /종합 리포트/);
   return {
     ok: true,

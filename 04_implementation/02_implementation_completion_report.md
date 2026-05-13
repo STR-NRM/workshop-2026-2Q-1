@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.5 GitHub Pages 정적 배포 기준 AI 분석 단순화. Firebase Functions 의존 제거.
+- 업데이트 내용: v1.6 결과 화면 요약/우선신호/문항별 시각화 개선, AI 리포트 3개 화면 분리.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` 설문 앱
 
@@ -29,16 +29,20 @@
 - Firebase 환경변수 기반 config
 - Firebase 미설정 시 localStorage QA 모드
 - 결과 화면
+- 한눈에 보는 요약 카드와 핵심 신호 설명
+- 우선 신호별 해석 카드
+- 문항별 분포/선택 비중 막대
 - 평균, 낮은 점수 비율, 높은 점수 비율, N/A 비율, 분산 계산
 - 축별 요약 차트
 - 객관식 분포
 - 서술형 응답 확인
 - CSV/JSON export
 - AI 분석 결과 표시
-- 결과 화면 버튼 기반 AI 분석 생성
+- 종합/비주관식/주관식 AI 리포트 화면 분리
+- 리포트별 AI 분석 생성 버튼 분리
 - 브라우저 OpenAI Responses API 분석 경로
 - AI 분석 결과 Firebase 저장
-- Executive Summary로 시작하는 전문가 검토형 리포트 프롬프트
+- 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트
 - 긴 리포트를 섹션/목록/표로 읽기 쉽게 표시하는 결과 화면
 - Firebase RTDB rules 배포본
 - GitHub Pages workflow
@@ -62,7 +66,7 @@ npm audit --omit=dev
 - 역할/외부 협업/CBT 라우팅 포함 전체 설문 완주 확인
 - 완료 화면 확인
 - 결과 화면 진입 확인
-- 결과 요약, 축별 평균, export 버튼, AI 분석 탭 존재 확인
+- 결과 요약, 축별 평균, export 버튼, AI 종합/비주관식/주관식 탭 존재 확인
 - 콘솔 error 없음 확인
 
 추가 수정:
@@ -81,7 +85,7 @@ npm audit --omit=dev
 - 앱 코드에서 2025/4Q/이전 Firebase 키/`VITE_OPENAI_API_KEY` 번들 주입/gpt-5.1 잔여 패턴 없음 확인.
 - GitHub PAT와 OpenAI API key는 파일에 저장하지 않음.
 - OpenAI 키는 브라우저 환경변수, GitHub Actions secret, Firebase에 저장하지 않고 결과 화면 런타임 입력값으로만 사용한다.
-- 결과 화면 버튼 외의 별도 AI 분석 실행 경로는 제거했다.
+- 결과 화면의 AI 종합/비주관식/주관식 탭 외 별도 AI 분석 실행 경로는 제거했다.
 - Firebase service account JSON은 `.gitignore` 대상이며 현재 앱 실행 경로에는 필요하지 않다.
 - Firebase web config는 클라이언트 공개 설정이므로 GitHub Pages build env에 포함했다. 데이터 보호는 API key 은닉이 아니라 Auth와 RTDB rules로 수행한다.
 - `npm audit --omit=dev` 기준 production dependency 취약점 0개.
