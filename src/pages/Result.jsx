@@ -13,10 +13,8 @@ import { AppShell, PageHeader, Panel } from '../components/common/Layout';
 import { questions, surveyInfo } from '../data/questions';
 import {
   analysisService,
-  getDataSourceInfo,
   respondentService,
   responseService,
-  usingLocalStore,
 } from '../firebase/config';
 import { buildAiAnalysisPayload, buildDashboardStats, formatAverage, toPercent } from '../utils/analytics';
 import { requestWorkshopAnalysis } from '../utils/openaiAnalysis';
@@ -59,18 +57,6 @@ function Metric({ label, value, hint }) {
       <span>{label}</span>
       <strong>{value}</strong>
       {hint ? <small>{hint}</small> : null}
-    </div>
-  );
-}
-
-function DataSourceInfo({ dataSource }) {
-  const databaseHost = dataSource.databaseURL ? new URL(dataSource.databaseURL).host : '설정되지 않음';
-  return (
-    <div className={styles.dataSource}>
-      <span>운영 모드: {dataSource.mode}</span>
-      <span>Firebase 프로젝트: {dataSource.projectId || '설정되지 않음'}</span>
-      <span>DB: {databaseHost}</span>
-      <span>저장 경로: {dataSource.namespace}</span>
     </div>
   );
 }
@@ -627,7 +613,6 @@ export default function Result() {
     [allResponses, respondents],
   );
   const overview = useMemo(() => buildOverview(dashboard), [dashboard]);
-  const dataSource = useMemo(() => getDataSourceInfo(), []);
 
   const loadData = async () => {
     setLoading(true);
@@ -643,7 +628,7 @@ export default function Result() {
       setAnalysis(analysisData || null);
     } catch (err) {
       console.error(err);
-      setDataError(err.message || '결과 데이터를 불러오지 못했습니다. Firebase 권한 또는 연결 상태를 확인해주세요.');
+      setDataError(err.message || '결과 데이터를 불러오지 못했습니다. 네트워크 연결을 확인한 뒤 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -668,7 +653,7 @@ export default function Result() {
     setActiveTab(sourceConfig.tabId);
     setAnalysisError('');
     if (!openAiKey.trim()) {
-      setAnalysisError('OpenAI API key를 입력해야 AI 분석을 생성할 수 있습니다.');
+      setAnalysisError('리포트 생성용 키를 입력해야 합니다.');
       return;
     }
     if (!canRunAnalysis) return;
@@ -684,7 +669,7 @@ export default function Result() {
           analysisType,
         })),
       );
-      setAnalysisProgress('AI 리포트 3개를 Firebase에 저장하는 중입니다.');
+      setAnalysisProgress('AI 리포트 3개를 저장하는 중입니다.');
       const latestAnalysis = await analysisService.getComprehensiveAnalysis();
       const nextAnalysis = generatedReports.reduce(
         (currentAnalysis, report) => mergeAnalysisReport(currentAnalysis, report),
@@ -738,9 +723,8 @@ export default function Result() {
         description="개인 평가가 아니라 운영 병목, 이견, 4주 실행 실험 후보를 찾기 위한 결과 화면입니다."
         meta={
           <>
-            <span>{usingLocalStore ? '로컬 QA 모드' : 'Firebase 모드'}</span>
-            <span>{loading ? '동기화 중' : '동기화 완료'}</span>
-            <span>{analysis?.analyzedAt ? `AI 분석 ${formatTime(analysis.analyzedAt)}` : 'AI 분석 대기'}</span>
+            <span>{loading ? '결과 불러오는 중' : '결과 불러옴'}</span>
+            <span>{analysis?.analyzedAt ? `리포트 생성 ${formatTime(analysis.analyzedAt)}` : '리포트 미생성'}</span>
           </>
         }
       />
@@ -751,7 +735,6 @@ export default function Result() {
         <Button variant="ghost" onClick={exportJson}>JSON 내보내기</Button>
       </div>
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
-      <DataSourceInfo dataSource={dataSource} />
 
       <div className={styles.metrics}>
         <Metric label="응답 세션" value={`${dashboard.respondentCount}명`} hint="응답 시작 기준" />
@@ -926,13 +909,13 @@ export default function Result() {
               description={activeAnalysisConfig.description}
             />
             <div className={styles.reportControls}>
-              <label htmlFor="openai-key">OpenAI API key</label>
+              <label htmlFor="report-key">리포트 생성용 키</label>
               <input
-                id="openai-key"
+                id="report-key"
                 type="password"
                 value={openAiKey}
                 onChange={(event) => setOpenAiKey(event.target.value)}
-                placeholder="sk-..."
+                placeholder="리포트 생성용 키를 입력하세요"
                 autoComplete="off"
                 spellCheck="false"
               />
@@ -972,8 +955,6 @@ export default function Result() {
           {activeReport ? (
             <div className={styles.analysis}>
               <div className={styles.analysisMeta}>
-                <span>모델: {activeReport.model || '-'}</span>
-                <span>추론 수준: {activeReport.reasoningEffort || '-'}</span>
                 <span>생성 시각: {formatTime(activeReport.analyzedAt)}</span>
                 <span>응답자: {activeReport.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
               </div>

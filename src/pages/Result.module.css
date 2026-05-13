@@ -9,23 +9,6 @@
   margin-bottom: 18px;
 }
 
-.dataSource {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 18px;
-}
-
-.dataSource span {
-  padding: 6px 9px;
-  color: var(--text-muted);
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

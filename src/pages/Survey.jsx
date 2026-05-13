@@ -64,7 +64,7 @@ export default function Survey() {
         setCurrentIndex(savedIndex >= 0 ? savedIndex : 0);
       } catch (err) {
         console.error(err);
-        setError('설문 데이터를 불러오지 못했습니다. 네트워크 또는 Firebase 설정을 확인해주세요.');
+        setError('설문 데이터를 불러오지 못했습니다. 네트워크 연결을 확인한 뒤 다시 시도해주세요.');
       } finally {
         if (alive) setLoading(false);
       }

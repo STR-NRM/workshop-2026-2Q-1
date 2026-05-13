@@ -133,7 +133,7 @@ function normalizeReport(text) {
   if (/^#\s*Executive Summary/i.test(trimmed)) return trimmed;
   if (/^Executive Summary/i.test(trimmed)) return `# ${trimmed}`;
   return `# Executive Summary
-- 모델 응답이 지정된 제목으로 시작하지 않아, 운영자가 읽을 수 있도록 제목을 보정했습니다.
+- 생성된 응답이 지정된 제목으로 시작하지 않아, 운영자가 읽을 수 있도록 제목을 보정했습니다.
 
 ${trimmed}`;
 }
@@ -163,7 +163,7 @@ export async function requestWorkshopAnalysis({
 }) {
   const normalizedApiKey = String(apiKey || '').trim();
   if (!normalizedApiKey) {
-    throw new Error('OpenAI API key를 입력해야 AI 분석을 생성할 수 있습니다.');
+    throw new Error('리포트 생성용 키를 입력해야 합니다.');
   }
 
   const validPayload = requirePayload(payload);
@@ -183,7 +183,7 @@ export async function requestWorkshopAnalysis({
 
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(body?.error?.message || `OpenAI 분석 요청이 실패했습니다. (${response.status})`);
+    throw new Error(body?.error?.message || `리포트 생성 요청이 실패했습니다. (${response.status})`);
   }
 
   return {

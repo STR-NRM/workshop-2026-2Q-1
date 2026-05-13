@@ -30,7 +30,7 @@
 1. 팀원이 GitHub Pages URL에 접속한다.
 2. 앱이 Anonymous Auth 세션을 만들고 `/surveys/2026-2Q-1/respondents/{uid}`와 `/responses/{uid}`에 저장한다.
 3. 결과 페이지는 Firebase에서 응답, 세션, 기존 AI 분석 결과를 읽는다.
-4. 진행자가 결과 페이지의 `AI 종합`, `AI 비주관식`, `AI 주관식` 탭 중 아무 화면에서나 OpenAI API key를 입력하고 리포트 생성 버튼을 누른다.
+4. 진행자가 결과 페이지의 `AI 종합`, `AI 비주관식`, `AI 주관식` 탭 중 아무 화면에서나 리포트 생성용 key를 입력하고 리포트 생성 버튼을 누른다.
 5. 브라우저가 종합, 비주관식, 주관식 payload를 OpenAI Responses API에 동시에 보내고, 받은 보고서를 `/surveys/2026-2Q-1/analysis/comprehensive/reports/...` 구조로 나누어 저장한다.
 6. 이후 팀원은 같은 결과 페이지의 리포트별 탭에서 저장된 AI 리포트를 조회한다.
 

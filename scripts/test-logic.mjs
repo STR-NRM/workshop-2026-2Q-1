@@ -87,7 +87,7 @@ const aiPayload = {
 
 await assert.rejects(
   () => requestWorkshopAnalysis({ apiKey: '', payload: aiPayload }),
-  /OpenAI API key/,
+  /리포트 생성용 키/,
 );
 
 const originalFetch = globalThis.fetch;

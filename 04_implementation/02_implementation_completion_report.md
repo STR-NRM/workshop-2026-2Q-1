@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.8 Firebase 현실형 테스트 응답 10명 투입, AI 리포트 핵심 문장 강조 UI와 10단어 프롬프트 규칙 반영.
+- 업데이트 내용: v1.9 메인 화면 목적 설명 강화, 사용자 화면의 저장소/모델 제공자 노출 제거, 이어하기 안내 정리.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` 설문 앱
 
@@ -11,7 +11,7 @@
 1. 2025 4Q 앱을 그대로 쓰면 가장 빠르지만, 이전 Firebase 프로젝트와 이전 문항/프롬프트가 섞일 가능성이 높아 source of truth 기준으로 앱 코드를 재작성했다.
 2. 응답자 UX는 모바일 완주성이 핵심이므로 1문항 1화면, 자동 저장, 큰 터치 영역, 질문별 도움말을 유지했다.
 3. 응답자 식별 입력은 제거했다. 대신 Firebase Anonymous Auth 또는 localStorage fallback 세션을 사용한다.
-4. 지난해 레퍼런스처럼 정적 Pages에서 AI 분석을 바로 실행하되, `VITE_OPENAI_API_KEY`를 번들에 넣는 방식은 key 노출 위험이 있어 제외했다. 올해 앱은 결과 화면에서 진행자가 런타임으로 OpenAI API key를 입력하고, 브라우저가 익명 집계 데이터를 분석한 뒤 Firebase에 저장하는 구조로 구현했다.
+4. 지난해 레퍼런스처럼 정적 Pages에서 AI 분석을 바로 실행하되, 분석 실행 키를 번들에 넣는 방식은 key 노출 위험이 있어 제외했다. 올해 앱은 결과 화면에서 진행자가 런타임으로 리포트를 생성하고, 생성 결과만 저장하는 구조로 구현했다.
 5. Firebase/GitHub 외부 상태는 다른 세션 충돌 가능성이 있어 기존 유사 프로젝트를 재사용하지 않고 `workshop-2026-2q-1` 전용 프로젝트로 분리했다.
 6. GitHub Pages 배포본은 `.env.local`을 읽지 않으므로 공개 가능한 Firebase web config를 workflow build env에 넣었다. 이 값은 클라이언트 앱에 포함되는 공개 설정이고, 보안 경계는 RTDB rules와 Auth provider에 둔다.
 7. 결과 화면은 팀 내부에서 공유되는 워크샵용 화면이므로 별도 로그인 없이 열람 가능하게 했다. 응답 저장은 계속 Anonymous Auth 세션으로 보호한다.
@@ -46,6 +46,9 @@
 - 긴 리포트를 섹션/목록/표로 읽기 쉽게 표시하는 결과 화면
 - 한 문장 결론, 한문장 정리, 한문장 제안을 별도 강조 박스로 표시
 - AI 핵심 문장은 큰따옴표와 10단어 이내 규칙으로 생성하도록 프롬프트 강화
+- 메인 화면에서 설문 목적, 확인하려는 신호, 워크샵 활용 방식을 쉬운 한국어로 재정리
+- 사용자 화면에서 저장소, 모델 제공자, 내부 실행 모드 같은 뒷단 정보 노출 제거
+- 이름/사번 입력 없이 같은 브라우저에서 이어하기 가능한 세션 안내 강화
 - Firebase RTDB rules 배포본
 - GitHub Pages workflow
 
@@ -77,7 +80,7 @@ npm audit --omit=dev
 - lazy route blank frame 방지를 위한 로딩 fallback 추가
 - 결과 차트 애니메이션 중간 프레임 방지를 위해 차트 animation 비활성화
 - 결과 차트와 설문 라우트 code split 적용
-- GitHub Pages workflow에 Firebase 모드 빌드 환경값 반영
+- GitHub Pages workflow에 운영 데이터 저장용 빌드 환경값 반영
 - GitHub Pages enablement 시도 결과 현재 private repo plan에서는 지원되지 않음을 확인하고, workflow를 수동 실행용으로 조정
 - Firebase Auth Anonymous provider 활성화
 - Firebase RTDB rules 재배포
@@ -86,9 +89,10 @@ npm audit --omit=dev
 ## 3. 보안/혼입 방지 확인
 
 - 앱 코드에서 2025/4Q/이전 Firebase 키/`VITE_OPENAI_API_KEY` 번들 주입/gpt-5.1 잔여 패턴 없음 확인.
-- GitHub PAT와 OpenAI API key는 파일에 저장하지 않음.
-- OpenAI 키는 브라우저 환경변수, GitHub Actions secret, Firebase에 저장하지 않고 결과 화면 런타임 입력값으로만 사용한다.
+- GitHub PAT와 리포트 생성용 key는 파일에 저장하지 않음.
+- 리포트 생성용 key는 브라우저 환경변수, GitHub Actions secret, 데이터 저장소에 저장하지 않고 결과 화면 런타임 입력값으로만 사용한다.
 - 결과 화면의 AI 종합/비주관식/주관식 탭 외 별도 AI 분석 실행 경로는 제거했다. 어느 탭에서 생성 버튼을 눌러도 3종 리포트가 동시에 생성된다.
+- 응답자와 일반 결과 열람자가 보는 화면에는 저장소, 모델 제공자, 내부 실행 모드가 불필요하게 노출되지 않는다.
 - Firebase service account JSON은 `.gitignore` 대상이며 현재 앱 실행 경로에는 필요하지 않다.
 - Firebase web config는 클라이언트 공개 설정이므로 GitHub Pages build env에 포함했다. 데이터 보호는 API key 은닉이 아니라 Auth와 RTDB rules로 수행한다.
 - `npm audit --omit=dev` 기준 production dependency 취약점 0개.
@@ -117,5 +121,5 @@ GitHub:
 ## 5. 현재 한계
 
 1. GitHub Pages는 현재 private repo plan에서 지원되지 않아 실제 배포 활성화가 남아 있다.
-2. AI 리포트 생성자는 결과 화면에서 OpenAI API key를 입력해야 한다. 응답자는 별도 설정 없이 설문을 제출할 수 있다.
-3. GitHub Pages 배포본은 Firebase 모드로 빌드되며, 팀원은 별도 로컬 설정 없이 URL 접속만으로 응답을 Firebase에 저장할 수 있다.
+2. AI 리포트 생성자는 결과 화면에서 리포트 생성용 key를 입력해야 한다. 응답자는 별도 설정 없이 설문을 제출할 수 있다.
+3. GitHub Pages 배포본은 운영 데이터 저장 설정으로 빌드되며, 팀원은 별도 로컬 설정 없이 URL 접속만으로 응답을 저장할 수 있다.

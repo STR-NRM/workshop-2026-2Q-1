@@ -19,7 +19,7 @@ export default function Complete() {
         </p>
         <div className={styles.notice}>
           <strong>다음 단계</strong>
-          <span>전체 응답이 모이면 결과 화면에서 집계와 AI 분석 결과를 확인합니다.</span>
+          <span>전체 응답이 모이면 결과 화면에서 집계와 워크샵 리포트를 확인합니다.</span>
         </div>
         <Button variant="secondary" onClick={() => navigate('/')}>
           처음 화면으로

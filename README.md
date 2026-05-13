@@ -7,7 +7,7 @@
 - React 19 + Vite
 - Firebase Authentication
 - Firebase Realtime Database
-- Browser-run AI analysis from the result page
+- Browser-run report generation from the result page
 - Mobile-first respondent survey
 - Shared result and report dashboard
 
@@ -51,11 +51,11 @@ npm run lint
 npm run build
 ```
 
-## AI Analysis
+## Report Generation
 
-AI analysis runs from the result page through three separate report tabs: `AI 종합`, `AI 비주관식`, and `AI 주관식`. The facilitator enters an OpenAI API key in the selected report tab, the browser sends the relevant anonymized aggregate survey data to the OpenAI Responses API, and the generated report is saved to Firebase Realtime Database.
+Report generation runs from the result page through three separate report tabs: `AI 종합`, `AI 비주관식`, and `AI 주관식`. The facilitator enters a report generation key in the selected report tab, the browser sends the relevant anonymized aggregate survey data to the configured analysis provider, and the generated report is saved to the app database.
 
-This keeps GitHub Pages deployment simple and avoids Firebase Cloud Functions/Blaze requirements. The OpenAI key is not committed, not added to GitHub Actions secrets, and not saved to Firebase. It is used only for that browser request.
+This keeps GitHub Pages deployment simple and avoids server-side functions or paid runtime requirements. The report generation key is not committed, not added to GitHub Actions secrets, and not saved to the app database. It is used only for that browser request.
 
 Each report prompt requires an `Executive Summary` first, with a 10-word-or-shorter one-sentence conclusion, an easy analysis summary, and 3-5 action bullets before detailed sections. The result UI highlights the conclusion, section summary, and section proposal as distinct visual callouts.
 
@@ -65,4 +65,4 @@ Do not commit `.env.local`, OpenAI keys, Firebase service account JSON files, or
 
 GitHub Pages builds through `.github/workflows/deploy.yml`. The workflow is manual (`workflow_dispatch`) because this private repository's current GitHub plan returned `Pages not supported` when Pages enablement was attempted.
 
-After Pages support is enabled for the repo, run the workflow from the Actions tab. The workflow builds the app in Firebase 모드, so team members can open the GitHub Pages URL from their phone or computer and write responses directly to the dedicated Firebase Realtime Database without local setup. OpenAI keys, GitHub tokens, and Firebase service account JSON files must remain outside the repo.
+After Pages support is enabled for the repo, run the workflow from the Actions tab. The workflow builds the production survey app so team members can open the GitHub Pages URL from their phone or computer and save responses without local setup. Report generation keys, GitHub tokens, and Firebase service account JSON files must remain outside the repo.

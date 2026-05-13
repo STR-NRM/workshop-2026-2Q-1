@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.9 Firebase 현실형 테스트 응답 10명 투입, AI 리포트 핵심 문장 강조 UI와 10단어 프롬프트 규칙 반영.
+- 업데이트 내용: v2.0 메인 화면 목적 설명 강화, 사용자 화면의 저장소/모델 제공자 노출 제거, 이어하기 안내 정리.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` production-ready 개발
 
@@ -51,6 +51,9 @@
 - [x] 랜딩 페이지 2026 2Q-1 문맥으로 재작성
 - [x] 개인 ID 입력 제거
 - [x] 설문 안내/익명성/소요시간 문구 반영
+- [x] 메인 화면에서 설문 목적, 확인하려는 신호, 워크샵 활용 방식을 쉬운 한국어로 설명
+- [x] 사용자 화면에서 저장소, 모델 제공자, 내부 실행 모드 같은 뒷단 정보를 노출하지 않도록 정리
+- [x] 이름/사번 입력 없이 같은 브라우저에서 이어하기 가능한 세션 안내 정리
 - [x] 질문 도움말 표시
 - [x] 저장 상태와 오류 상태 표시
 - [x] 완료 페이지 재작성
@@ -68,7 +71,7 @@
 - [x] 종합/비주관식/주관식 AI 리포트 화면 분리
 - [x] 어떤 AI 리포트 탭에서 생성 버튼을 눌러도 3종 리포트가 동시에 생성되도록 구현
 - [x] 브라우저 OpenAI Responses API 분석 경로 작성
-- [x] AI 분석 결과 Firebase 저장 경로 작성
+- [x] AI 리포트 결과 저장 경로 작성
 - [x] 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트 작성
 - [x] 긴 AI 리포트를 읽기 쉬운 섹션/목록/표 형태로 표시
 - [x] 한 문장 결론, 한문장 정리, 한문장 제안을 별도 강조 박스로 렌더링
@@ -112,13 +115,13 @@
 - Firebase Auth: Anonymous provider 활성화 완료.
 - Firebase rules: `firebase/database.rules.json` 배포 완료.
 - Firebase local config: `.env.local`에만 저장했고 git에는 포함하지 않음.
-- GitHub Pages build: workflow에 공개 가능한 Firebase web config를 넣어 Pages 배포본이 `Firebase 모드`로 빌드되도록 수정.
+- GitHub Pages build: workflow에 공개 가능한 데이터 저장 설정을 넣어 Pages 배포본이 별도 로컬 설정 없이 응답을 저장하도록 수정.
 - GitHub Pages enablement: API 활성화 시도 결과 현재 private repo plan에서 Pages 미지원. 자동 push 트리거는 실패를 반복하지 않도록 제거하고 수동 실행으로 제한.
 - GitHub CLI: 로그인 완료. `repo`, `workflow` 권한 확인.
 - GitHub push/merge: `main`과 `codex/build-workshop-2026-2q-1`에 push 완료. 원격 기본 브랜치는 `main`.
-- AI 분석: Firebase Functions를 제거하고 결과 화면에서 런타임 OpenAI key로 직접 생성한 뒤 Firebase에 저장하는 방식으로 단순화.
+- AI 분석: 서버 함수 없이 결과 화면에서 진행자가 리포트를 생성하고 결과만 저장하는 방식으로 단순화.
 - 로컬 QA: `VITE_USE_LOCAL_STORE=true`로 설문 완주와 결과 화면 확인 완료.
-- Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 Firebase 모드 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
+- Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 저장 설정 기준 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
 - Browser plugin QA 참고: Codex 인앱 브라우저에서는 Firebase Auth 네트워크 오류가 발생했으나, 동일 설정이 Node SDK와 사용자의 Chrome에서는 정상 동작했다.
 - Firebase seed QA: `seed-2026-05-13-realistic-10` 배치로 10명치 completed 응답 추가 완료. 기존 응답 2건을 보존해 현재 Firebase 총 응답 세션은 12건이다.
 
@@ -131,3 +134,4 @@
 - Firebase 설정 후에는 모든 팀원이 별도 설정 없이 응답하고 결과를 볼 수 있다.
 - API key와 Firebase service account가 repo에 포함되지 않는다.
 - lint/build/logic/browser QA를 통과한다.
+- 응답자와 일반 결과 열람자가 보는 화면에는 저장소, 모델 제공자, 내부 실행 모드가 불필요하게 노출되지 않는다.
