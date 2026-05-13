@@ -271,10 +271,10 @@ function buildOverview(dashboard) {
   };
 }
 
-function OverviewCard({ item }) {
+function OverviewCard({ item, index }) {
   return (
     <div className={styles.overviewCard}>
-      <span>{item.label}</span>
+      <span>{String(index + 1).padStart(2, '0')} · {item.label}</span>
       <strong>{item.value}</strong>
       <p>{item.detail}</p>
     </div>
@@ -341,7 +341,7 @@ function ChoiceBars({ stat }) {
         <div key={label} className={styles.choiceBarRow}>
           <div className={styles.choiceBarLabel}>
             <span>{label}</span>
-            <b>{count}회</b>
+            <b>{count}회 · {ratioPercent(count, total)}%</b>
           </div>
           <div className={styles.choiceBarTrack}>
             <div style={{ width: `${ratioPercent(count, total)}%` }} />
@@ -474,6 +474,22 @@ function ReportCallout({ signal }) {
       <strong>“{signal.text}”</strong>
     </div>
   );
+}
+
+function stripNarrativeReportChrome(text, analysisType) {
+  if (analysisType !== 'letter' && analysisType !== 'roleMessages') return text;
+  const title = analysisType === 'letter' ? '한 장의 편지' : '직무별 메시지';
+  const cleaned = String(text || '')
+    .trim()
+    .replace(/^#?\s*Executive Summary\s*/i, '')
+    .split('\n')
+    .filter((line) => !extractReportSignal(line))
+    .join('\n')
+    .trim()
+    .replace(new RegExp(`^##\\s*${title}\\s*`, 'i'), `# ${title}\n\n`);
+  if (!cleaned) return `# ${title}`;
+  if (/^#\s+/.test(cleaned)) return cleaned;
+  return `# ${title}\n\n${cleaned}`;
 }
 
 function MarkdownReport({ text }) {
@@ -717,12 +733,30 @@ export default function Result() {
   const [openAiKey, setOpenAiKey] = useState('');
   const [analysisProgress, setAnalysisProgress] = useState('');
   const [analysisRunningTypes, setAnalysisRunningTypes] = useState([]);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reportDialogType, setReportDialogType] = useState('comprehensive');
 
   const dashboard = useMemo(
     () => buildDashboardStats(allResponses, respondents),
     [allResponses, respondents],
   );
   const overview = useMemo(() => buildOverview(dashboard), [dashboard]);
+  const questionGroups = useMemo(() => {
+    const groups = [];
+    const groupMap = new Map();
+    dashboard.questionStats
+      .filter((stat) => stat.answeredCount > 0 && stat.question.type !== 'longText')
+      .forEach((stat) => {
+        const section = stat.question.section || '기타 문항';
+        if (!groupMap.has(section)) {
+          const group = { section, items: [] };
+          groupMap.set(section, group);
+          groups.push(group);
+        }
+        groupMap.get(section).items.push(stat);
+      });
+    return groups;
+  }, [dashboard.questionStats]);
 
   const loadData = async () => {
     setLoading(true);
@@ -788,6 +822,7 @@ export default function Result() {
       );
       const saved = await analysisService.saveComprehensiveAnalysis(nextAnalysis);
       setAnalysis(saved);
+      setIsReportDialogOpen(false);
     } catch (err) {
       console.error(err);
       setAnalysisError(err.message || '리포트를 만들지 못했습니다.');
@@ -824,11 +859,23 @@ export default function Result() {
   const generatedReportTypes = existingReportTypes(analysis);
   const activeAnalysisConfig = Object.values(analysisConfigs).find((config) => config.tabId === activeTab);
   const activeReport = activeAnalysisConfig ? getStoredReport(analysis, activeAnalysisConfig.type) : null;
+  const activeReportText = activeReport
+    ? stripNarrativeReportChrome(activeReport.result || '', activeAnalysisConfig.type)
+    : '';
   const isRunningAllAnalyses = allAnalysisTypes.every((type) => analysisRunningTypes.includes(type));
   const activeResultMode = activeAnalysisConfig ? 'ai' : 'basic';
   const visibleTabs = activeResultMode === 'ai' ? aiTabs : basicTabs;
   const changeResultMode = (mode) => {
     setActiveTab(mode === 'ai' ? analysisConfigs.letter.tabId : 'overview');
+  };
+  const openReportDialog = (analysisType) => {
+    setReportDialogType(analysisType);
+    setAnalysisError('');
+    setIsReportDialogOpen(true);
+  };
+  const closeReportDialog = () => {
+    if (analysisRunningTypes.length) return;
+    setIsReportDialogOpen(false);
   };
 
   return (
@@ -911,7 +958,7 @@ export default function Result() {
               </p>
             </div>
             <div className={styles.overviewCards}>
-              {overview.cards.map((item) => <OverviewCard key={item.label} item={item} />)}
+              {overview.cards.map((item, index) => <OverviewCard key={item.label} item={item} index={index} />)}
             </div>
           </Panel>
 
@@ -971,6 +1018,10 @@ export default function Result() {
             title="우선 확인할 신호"
             description="아래 신호는 결론이 아니라 워크샵에서 먼저 질문해야 할 후보입니다. 낮은 평균, 큰 응답 차이, 판단 어려움은 각각 의미가 다릅니다."
           />
+          <div className={styles.signalGuide}>
+            <strong>읽는 순서</strong>
+            <span>낮은 점수는 구조 확인, 큰 차이는 경험 차이 확인, 판단 어려움은 정보 접근 확인으로 읽습니다.</span>
+          </div>
           <div className={styles.signalCards}>
             <SignalList
               title="점수가 낮은 문항"
@@ -1004,10 +1055,18 @@ export default function Result() {
             title="문항별 결과"
             description="1~5점 척도 문항은 점수 분포와 평균을, 선택형 문항은 선택 비중 막대를 함께 봅니다. 낮은 평균과 큰 응답 차이는 바로 결론이 아니라 토론 후보입니다."
           />
-          <div className={styles.questionList}>
-            {dashboard.questionStats
-              .filter((stat) => stat.answeredCount > 0 && stat.question.type !== 'longText')
-              .map((stat) => <QuestionStatRow key={stat.question.id} stat={stat} />)}
+          <div className={styles.questionGroups}>
+            {questionGroups.map((group) => (
+              <section key={group.section} className={styles.questionGroup}>
+                <div className={styles.questionGroupHeader}>
+                  <h3>{group.section}</h3>
+                  <span>{group.items.length}개 문항</span>
+                </div>
+                <div className={styles.questionList}>
+                  {group.items.map((stat) => <QuestionStatRow key={stat.question.id} stat={stat} />)}
+                </div>
+              </section>
+            ))}
           </div>
         </Panel>
       ) : null}
@@ -1047,25 +1106,16 @@ export default function Result() {
               description={activeAnalysisConfig.description}
             />
             <div className={styles.reportControls}>
-              <label htmlFor="report-key">리포트 생성용 키</label>
-              <input
-                id="report-key"
-                type="password"
-                value={openAiKey}
-                onChange={(event) => setOpenAiKey(event.target.value)}
-                placeholder="리포트 생성용 키를 입력하세요"
-                autoComplete="off"
-                spellCheck="false"
-              />
-              <Button
-                onClick={() => runAllAnalyses(activeAnalysisConfig.type)}
-                loading={isRunningAllAnalyses}
+              <button
+                type="button"
+                className={styles.reportOpenButton}
+                onClick={() => openReportDialog(activeAnalysisConfig.type)}
                 disabled={!canRunAnalysis || Boolean(analysisRunningTypes.length)}
               >
-                {activeAnalysisConfig.buttonLabel}
-              </Button>
+                리포트 생성/갱신
+              </button>
               <small className={styles.controlHelp}>
-                어떤 AI 분석 탭에서 누르더라도 {analysisReportCount}개 리포트가 동시에 만들어지고 각 탭에 저장됩니다.
+                누르면 키 입력 창이 열리고 {analysisReportCount}개 리포트가 동시에 만들어집니다.
               </small>
             </div>
           </div>
@@ -1088,15 +1138,15 @@ export default function Result() {
               </div>
             ))}
           </div>
-          {analysisError ? <p className={styles.error}>{analysisError}</p> : null}
-          {analysisProgress ? <p className={styles.progressNote}>{analysisProgress}</p> : null}
+          {analysisError && !isReportDialogOpen ? <p className={styles.error}>{analysisError}</p> : null}
+          {analysisProgress && !isReportDialogOpen ? <p className={styles.progressNote}>{analysisProgress}</p> : null}
           {activeReport ? (
             <div className={styles.analysis}>
               <div className={styles.analysisMeta}>
                 <span>생성 시각: {formatTime(activeReport.analyzedAt)}</span>
                 <span>응답자: {activeReport.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
               </div>
-              <MarkdownReport text={activeReport.result || ''} />
+              <MarkdownReport text={activeReportText} />
             </div>
           ) : (
             <div className={styles.emptyState}>
@@ -1105,6 +1155,50 @@ export default function Result() {
             </div>
           )}
         </Panel>
+      ) : null}
+
+      {isReportDialogOpen ? (
+        <div className={styles.modalBackdrop} role="presentation" onClick={closeReportDialog}>
+          <div
+            className={styles.reportDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="report-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.reportDialogHead}>
+              <div>
+                <span>리포트 생성</span>
+                <h2 id="report-dialog-title">{analysisConfigs[reportDialogType]?.buttonLabel || '리포트 생성/갱신'}</h2>
+              </div>
+              <button type="button" onClick={closeReportDialog} aria-label="닫기" disabled={Boolean(analysisRunningTypes.length)}>
+                닫기
+              </button>
+            </div>
+            <p>
+              어떤 탭에서 시작하더라도 {analysisReportCount}개 리포트가 동시에 생성됩니다. 생성 중에는 탭을 닫거나 새로고침하지 마세요.
+            </p>
+            <label htmlFor="report-key-modal">리포트 생성용 키</label>
+            <input
+              id="report-key-modal"
+              type="password"
+              value={openAiKey}
+              onChange={(event) => setOpenAiKey(event.target.value)}
+              placeholder="리포트 생성용 키를 입력하세요"
+              autoComplete="off"
+              spellCheck="false"
+            />
+            {analysisError ? <p className={styles.error}>{analysisError}</p> : null}
+            {analysisProgress ? <p className={styles.progressNote}>{analysisProgress}</p> : null}
+            <Button
+              onClick={() => runAllAnalyses(reportDialogType)}
+              loading={isRunningAllAnalyses}
+              disabled={!canRunAnalysis || Boolean(analysisRunningTypes.length)}
+            >
+              {analysisReportCount}개 리포트 생성/갱신
+            </Button>
+          </div>
+        </div>
       ) : null}
     </AppShell>
   );

@@ -78,27 +78,27 @@
 .modeSwitch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  padding: 4px;
-  margin-bottom: 10px;
+  gap: 3px;
+  padding: 5px;
+  margin-bottom: 12px;
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 999px;
 }
 
 .modeSwitch button {
   display: flex;
-  min-height: 66px;
+  min-height: 56px;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 13px 15px;
+  gap: 4px;
+  padding: 9px 14px;
   color: var(--text);
-  text-align: left;
+  text-align: center;
   background: transparent;
   border: 0;
-  border-radius: 6px;
+  border-radius: 999px;
   cursor: pointer;
 }
 
@@ -113,13 +113,13 @@
 }
 
 .modeSwitch strong {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.35;
 }
 
 .modeSwitch span {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -135,7 +135,7 @@
 
 .modeGuide {
   margin-bottom: 12px;
-  padding: 12px 14px;
+  padding: 13px 16px;
   color: var(--text-muted);
   background: var(--surface-muted);
   border: 1px solid var(--border);
@@ -185,8 +185,8 @@
 .summaryHero {
   display: flex;
   flex-direction: column;
-  gap: 9px;
-  padding: 20px;
+  gap: 12px;
+  padding: 24px;
   color: var(--surface);
   background: var(--text);
   border-radius: var(--radius);
@@ -202,7 +202,7 @@
 
 .summaryHero strong {
   max-width: 920px;
-  font-size: 28px;
+  font-size: 30px;
   line-height: 1.32;
 }
 
@@ -220,14 +220,26 @@
 }
 
 .overviewCard {
+  position: relative;
   display: flex;
   min-height: 142px;
   flex-direction: column;
   gap: 9px;
-  padding: 16px;
+  padding: 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+.overviewCard::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 28px;
+  height: 3px;
+  background: var(--text);
+  border-radius: 999px;
 }
 
 .overviewCard span {
@@ -238,7 +250,8 @@
 
 .overviewCard strong {
   color: var(--text);
-  font-size: 19px;
+  padding-right: 34px;
+  font-size: 20px;
   line-height: 1.36;
 }
 
@@ -308,11 +321,32 @@
   gap: 14px;
 }
 
+.signalGuide {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.signalGuide strong {
+  font-weight: 900;
+}
+
+.signalGuide span {
+  color: var(--text-muted);
+}
+
 .signalGroup {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px;
+  padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -320,7 +354,7 @@
 
 .signalHead {
   display: flex;
-  min-height: 108px;
+  min-height: 98px;
   flex-direction: column;
   gap: 7px;
   padding-bottom: 12px;
@@ -341,9 +375,9 @@
 
 .signalItem {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(86px, 0.28fr);
+  grid-template-columns: minmax(0, 1fr) minmax(78px, 0.24fr);
   gap: 10px;
-  padding: 12px;
+  padding: 13px;
   background: var(--surface-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -374,10 +408,11 @@
 
 .signalMetric b {
   color: var(--text);
-  font-size: 20px;
+  font-size: 19px;
   line-height: 1;
 }
 
+.questionGroups,
 .questionList,
 .textList {
   display: flex;
@@ -385,11 +420,41 @@
   gap: 12px;
 }
 
+.questionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.questionGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--text);
+  border-radius: var(--radius-sm);
+}
+
+.questionGroupHeader h3 {
+  color: var(--surface);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.questionGroupHeader span {
+  flex: 0 0 auto;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 850;
+}
+
 .questionRow {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
   gap: 16px;
-  padding: 16px;
+  padding: 18px;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -563,36 +628,39 @@
 .reportControls {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
 }
 
-.reportControls label {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.reportControls input {
-  width: 100%;
-  min-height: 42px;
+.reportOpenButton {
+  min-height: 34px;
   padding: 0 12px;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 850;
+  cursor: pointer;
 }
 
-.reportControls input:focus {
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
+.reportOpenButton:hover,
+.reportOpenButton:focus-visible {
+  color: var(--surface);
+  background: var(--text);
+}
+
+.reportOpenButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .controlHelp {
   color: var(--text-muted);
   font-size: 12px;
   line-height: 1.55;
+  text-align: right;
 }
 
 .analysis {
@@ -618,16 +686,17 @@
 
 .reportStatusGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 7px;
 }
 
 .reportStatus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 12px;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 10px;
   background: var(--surface-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -635,12 +704,13 @@
 
 .reportStatus strong {
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 .reportStatus span {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -927,6 +997,96 @@
   line-height: 1.6;
 }
 
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(17, 17, 17, 0.46);
+}
+
+.reportDialog {
+  display: flex;
+  width: min(520px, 100%);
+  max-height: min(720px, calc(100vh - 36px));
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 60px rgba(17, 17, 17, 0.22);
+}
+
+.reportDialogHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.reportDialogHead span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.reportDialogHead h2 {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.reportDialogHead button {
+  flex: 0 0 auto;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.reportDialog p {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.reportDialog label {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.reportDialog input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+.reportDialog input:focus,
+.reportOpenButton:focus-visible,
+.reportDialogHead button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .error {
   padding: 12px;
   color: var(--text);
@@ -949,8 +1109,17 @@
 
   .reportHeader,
   .questionRow,
-  .signalItem {
+  .signalItem,
+  .signalGuide {
     grid-template-columns: 1fr;
+  }
+
+  .reportControls {
+    align-items: flex-start;
+  }
+
+  .controlHelp {
+    text-align: left;
   }
 
   .signalMetric {
@@ -965,8 +1134,8 @@
   }
 
   .modeSwitch button {
-    min-height: 62px;
-    padding: 11px 10px;
+    min-height: 50px;
+    padding: 9px 8px;
   }
 
   .modeSwitch strong {
@@ -974,11 +1143,32 @@
   }
 
   .modeSwitch span {
-    font-size: 12px;
+    display: none;
   }
 
   .summaryHero strong {
     font-size: 22px;
+  }
+
+  .summaryHero {
+    padding: 20px;
+  }
+
+  .overviewCard {
+    min-height: 118px;
+  }
+
+  .reportStatusGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reportStatus {
+    min-height: 32px;
+    padding: 7px 8px;
+  }
+
+  .reportDialog {
+    padding: 18px;
   }
 
   .tabs button {
