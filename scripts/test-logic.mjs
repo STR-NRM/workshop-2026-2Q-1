@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import {
   QUESTION_VERSION,
+  answerableQuestions,
   getVisibleQuestions,
   hasCbtModule,
   hasAnyExternalOption,
   hasExternalModule,
+  isAnswerableQuestion,
   isAnswered,
   questions,
 } from '../src/data/questions.js';
@@ -24,6 +26,11 @@ assert.equal(hasAnyExternalOption({ META_EXTERNAL: ['서비스/디자인'] }, ['
 assert.equal(hasCbtModule({ META_CBT: '예' }), true);
 assert.equal(hasCbtModule({ META_CBT: '아니오' }), false);
 assert.equal(questions.some((question) => question.options?.includes('응답하지 않음')), false);
+assert.equal(questions[0].type, 'sectionIntro');
+assert.equal(isAnswered(questions[0], undefined), true);
+assert.equal(answerableQuestions.some((question) => question.type === 'sectionIntro'), false);
+assert.ok(getVisibleQuestions({}).filter((question) => question.type === 'sectionIntro').length >= 6);
+assert.ok(getVisibleQuestions({}).filter(isAnswerableQuestion).some((question) => question.id === 'NPS01'));
 assert.equal(questions.find((question) => question.id === 'META_WORKSTREAM').maxSelections, undefined);
 assert.equal(questions.find((question) => question.id === 'A01').allowNA, undefined);
 assert.equal(questions.find((question) => question.id === 'B01').allowNA, true);
@@ -156,6 +163,23 @@ assert.equal(analysis.title, '종합 리포트');
 assert.equal(analysis.analysisType, 'comprehensive');
 assert.equal(analysis.inputSummary.surveyId, '2026-2Q-1');
 assert.equal(analysis.generatedBy.mode, 'browser');
+
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, 'https://api.openai.com/v1/responses');
+  const body = JSON.parse(options.body);
+  assert.match(body.input, /편지/);
+  assert.match(body.input, /직무별로 건네는 말/);
+  assert.match(body.input, /한 장으로 읽는 현재 이야기/);
+  assert.doesNotMatch(body.input, /Executive Summary 이후 모든 큰 섹션은 반드시 첫 부분에/);
+  return {
+    ok: true,
+    json: async () => ({ output_text: '# Executive Summary\n**한 문장 결론:** "편지 샘플입니다."' }),
+  };
+};
+
+const letterAnalysis = await requestWorkshopAnalysis({ apiKey: 'sk-test', payload: aiPayload, analysisType: 'letter' });
+assert.equal(letterAnalysis.title, '편지');
+assert.equal(letterAnalysis.analysisType, 'letter');
 globalThis.fetch = originalFetch;
 
 console.log('Logic tests OK');

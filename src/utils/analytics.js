@@ -1,4 +1,4 @@
-import { QUESTION_VERSION, SURVEY_ID, axisMap, questions, surveyInfo } from '../data/questions.js';
+import { QUESTION_VERSION, SURVEY_ID, answerableQuestions, axisMap, surveyInfo } from '../data/questions.js';
 
 const legacyChoiceLabels = {
   META_ROLE: {
@@ -126,7 +126,7 @@ export function getChoiceStats(values = []) {
 }
 
 export function buildQuestionStats(allResponses = {}) {
-  return questions.map((question) => {
+  return answerableQuestions.map((question) => {
     const values = getQuestionResponses(allResponses, question.id);
     const base = {
       question,

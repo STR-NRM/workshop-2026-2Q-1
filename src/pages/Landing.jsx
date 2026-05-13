@@ -35,7 +35,7 @@ export default function Landing() {
           meta={
             <>
               <span>{surveyInfo.estimatedTime}</span>
-              <span>{baseVisibleQuestionCount}개 기본 문항</span>
+              <span>{baseVisibleQuestionCount}개 기본 응답</span>
               <span>역할과 경험에 따라 일부 문항이 달라집니다</span>
             </>
           }

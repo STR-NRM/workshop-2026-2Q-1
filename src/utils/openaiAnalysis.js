@@ -1,4 +1,4 @@
-const REPORT_VERSION = '2026-05-13-browser-analysis-v6-one-page-report';
+const REPORT_VERSION = '2026-05-13-browser-analysis-v7-letter-and-chapters';
 const DEFAULT_MODEL = 'gpt-5.5';
 const DEFAULT_REASONING_EFFORT = 'high';
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
@@ -31,10 +31,10 @@ const reportSpecs = {
 9. ## 8. 다음 설문 또는 추가 확인 항목
    - 다음에 더 물어봐야 할 문항, 인터뷰로 확인할 것, 데이터로 검증할 것을 나누세요.`,
   },
-  onePage: {
-    title: '원페이지 리포트',
+  letter: {
+    title: '편지',
     goal:
-      '모든 문항을 망라하되, 긴 진단서가 아니라 팀원이 한 번에 읽을 수 있는 한 장짜리 이야기형 리포트를 작성하세요. 핵심 흐름, 우선 논의할 문제, 직무별로 건넬 말을 부드럽고 쉬운 언어로 정리하세요.',
+      '모든 문항을 망라하되, 긴 진단서가 아니라 팀원이 한 번에 읽을 수 있는 한 장짜리 편지형 분석을 작성하세요. 핵심 흐름, 우선 논의할 문제, 직무별로 건넬 말을 부드럽고 쉬운 언어로 정리하세요.',
     requiredSections: `1. # Executive Summary
    - 첫 줄은 반드시 **한 문장 결론:** "핵심 문장" 형식으로 작성하세요. 따옴표 안은 10단어 이내여야 합니다.
    - 이어서 "## 한 장으로 읽는 현재 이야기"를 작성하세요.
@@ -55,7 +55,7 @@ const reportSpecs = {
      > **제품/PM/프롬프트에게:** "요구사항과 우선순위를 연결하느라 신경 쓸 일이 많았을 것 같습니다. 지금은 기준을 더 보이게 만드는 일이 도움이 됩니다. 작은 결정 기준표부터 함께 맞춰보면 좋겠습니다."
      > **AI 엔지니어링에게:** "품질 개선과 운영 안정 사이에서 균형을 잡는 부담이 있었을 수 있습니다. 실험 결과가 결정으로 이어지는 길을 더 짧게 만들 필요가 있습니다. 바꾼 것과 배운 것을 한 장으로 남겨보면 좋겠습니다."
      > **웹 개발(프론트/백엔드)에게:** "AI 기능의 느림과 실패까지 화면과 API로 받아내느라 고려할 것이 많았을 수 있습니다. 구현 전 합의가 늦으면 뒤에서 비용이 커질 가능성이 있습니다. 예외 상태와 책임 기준을 먼저 맞춰보면 좋겠습니다."`,
-    onePage: true,
+    letter: true,
   },
   closedEnded: {
     title: '선택형·척도형 문항 리포트',
@@ -110,28 +110,28 @@ function requirePayload(payload) {
 
 function buildPrompt(payload, analysisType) {
   const spec = reportSpecs[analysisType] || reportSpecs.comprehensive;
-  const executiveSummaryRule = spec.onePage
+  const executiveSummaryRule = spec.letter
     ? '- Executive Summary에는 첫 줄 한 문장 결론만 두고, 별도의 요약 목록은 넣지 마세요. 핵심 설명은 "한 장으로 읽는 현재 이야기"에 담으세요.'
     : '- Executive Summary는 길게 쓰지 마세요. 한 문장 결론, 쉬운 분석 요약 3~5개, 해야 할 일 3~5개만 넣으세요.';
-  const structureRule = spec.onePage
-    ? '- 원페이지 리포트는 긴 보고서 문법보다 읽히는 흐름이 우선입니다. 각 문단은 요약, 근거, 해석, 제안이 자연스럽게 이어지게 쓰세요.'
+  const structureRule = spec.letter
+    ? '- 편지는 긴 보고서 문법보다 읽히는 흐름이 우선입니다. 각 문단은 요약, 근거, 해석, 제안이 자연스럽게 이어지게 쓰세요.'
     : '- 긴 보고서여도 구조가 선명해야 합니다. 각 섹션은 "요약", "근거", "해석", "실행 시사점" 순서가 드러나게 정리하세요.';
-  const workshopActionRule = spec.onePage
-    ? '- 원페이지 리포트에는 별도 "워크샵에서 확인할 질문" 목록이나 4주 개선 후보 상세 목록을 넣지 마세요. 필요한 질문과 제안은 문단 안에 자연스럽게 녹이세요.'
+  const workshopActionRule = spec.letter
+    ? '- 편지에는 별도 "워크샵에서 확인할 질문" 목록이나 4주 개선 후보 상세 목록을 넣지 마세요. 필요한 질문과 제안은 문단 안에 자연스럽게 녹이세요.'
     : '- 워크샵 현장에서 바로 토론할 수 있는 질문과 4주 동안 해볼 작은 개선 후보를 포함하세요.';
-  const sectionClosingRule = spec.onePage
+  const sectionClosingRule = spec.letter
     ? '- 별도 "워크샵에서 확인할 질문" 줄을 각 섹션 끝에 반복하지 마세요.'
     : '- 각 섹션 끝에는 팀원이 바로 이해할 수 있는 "워크샵에서 확인할 질문"을 1~3개 포함하세요.';
-  const sectionSignalRule = spec.onePage
-    ? `- 원페이지 리포트는 짧은 이야기 흐름이 중요합니다. Executive Summary 이후에 **한문장 정리:**, **한문장 제안:** 형식을 반복하지 마세요.
+  const sectionSignalRule = spec.letter
+    ? `- 편지는 짧은 이야기 흐름이 중요합니다. Executive Summary 이후에 **한문장 정리:**, **한문장 제안:** 형식을 반복하지 마세요.
 - 대신 각 문단의 첫 문장을 굵게 처리해, 첫 문장들만 읽어도 전체 흐름이 이어지게 하세요.
 - 직무별 메시지는 반드시 blockquote 형식으로 작성해 화면에서 따로 보이게 하세요.`
     : `- Executive Summary 이후 모든 큰 섹션은 반드시 첫 부분에 **한문장 정리:** "핵심 정리"와 **한문장 제안:** "핵심 제안"을 각각 한 줄씩 넣고, 그 아래에 상세 근거와 해석을 작성하세요.
 - "한문장 정리"는 그 섹션에서 관찰한 사실 또는 해석을 10단어 이내로 말합니다.
 - "한문장 제안"은 그 섹션을 읽고 워크샵에서 무엇을 해야 하는지 10단어 이내로 말합니다.
 - 상세 리포트는 충분히 길고 구조적이어야 하지만, 각 섹션의 핵심은 위 두 문장만 읽어도 파악되어야 합니다.`;
-  const closingRule = spec.onePage
-    ? '원페이지 리포트에는 별도의 "4주 개선 후보" 상세 양식을 붙이지 마세요. 필요한 제안은 본문과 직무별 메시지 안에 짧게 녹이세요.'
+  const closingRule = spec.letter
+    ? '편지에는 별도의 "4주 개선 후보" 상세 양식을 붙이지 마세요. 필요한 제안은 본문과 직무별 메시지 안에 짧게 녹이세요.'
     : '각 4주 개선 후보에는 반드시 "가설", "첫 1주 실행", "성공 판단 신호", "부작용/주의점", "중단 기준"을 포함하세요.';
 
   return `다음은 누리미디어 AI 사업부 2026 상반기 워크샵 사전 설문의 익명 집계 데이터입니다.
@@ -161,6 +161,8 @@ ${executiveSummaryRule}
 - 응답 수가 적으면 응답자 수의 한계를 명시하고, 결론을 단정하지 마세요.
 ${structureRule}
 - 수치와 서술형 응답을 구분해서 해석하고, 서술형은 익명성을 해칠 수 있는 표현을 일반화하세요.
+- 챕터 흐름은 팀 경험/몰입, 목표와 실행, 협업과 운영, 우선순위, 직무별 추가, 마지막 회고 순서로 읽어야 합니다.
+- 팀 추천 의향 0~10 문항은 표본이 작으므로 단독 점수로 단정하지 말고, 다른 신호와 함께 보는 기준점으로만 해석하세요.
 - 수치가 약한 지점에서는 "추정", "가능성", "확인 필요"를 명확히 구분하세요.
 - 확신 수준은 높음/중간/낮음으로 표시하고, 확신 수준이 낮은 결론은 실행안으로 단정하지 마세요.
 ${workshopActionRule}

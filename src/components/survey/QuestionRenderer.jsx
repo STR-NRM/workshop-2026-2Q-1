@@ -23,7 +23,7 @@ export default function QuestionRenderer({ question, value, onChange, validation
     const exclusiveOptions = question.exclusiveOptions || [];
 
     return (
-      <div className={styles.options}>
+      <div className={`${styles.options} ${question.layout === 'scoreLine' ? styles.scoreOptions : ''}`}>
         {question.options.map((option) => {
           const selected = multi ? current.includes(option) : current === option;
           const maxReached = multi && max && current.length >= max && !selected;
@@ -57,6 +57,17 @@ export default function QuestionRenderer({ question, value, onChange, validation
       </div>
     );
   };
+
+  if (question.type === 'sectionIntro') {
+    return (
+      <article className={`${styles.card} ${styles.chapterCard}`}>
+        <div className={styles.chapterLabel}>{question.section}</div>
+        <h2 className={styles.chapterTitle}>{question.title}</h2>
+        <p className={styles.chapterLead}>{question.question}</p>
+        {question.helpText ? <p className={styles.chapterHelp}>{question.helpText}</p> : null}
+      </article>
+    );
+  }
 
   return (
     <article className={styles.card}>

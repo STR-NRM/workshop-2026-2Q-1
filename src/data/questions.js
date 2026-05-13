@@ -1,5 +1,5 @@
 export const SURVEY_ID = '2026-2Q-1';
-export const QUESTION_VERSION = '2026-05-13-v1.4';
+export const QUESTION_VERSION = '2026-05-13-v1.5';
 
 export const surveyInfo = {
   title: '2026 상반기 AI 사업부 일하는 방식 점검 설문',
@@ -7,7 +7,7 @@ export const surveyInfo = {
   description:
     '개인 평가가 아니라 워크샵에서 다룰 막히는 지점과 4주 동안 해볼 작은 개선을 찾기 위한 설문입니다.',
   target: '문치웅 팀장과 스쿼드 리드를 제외한 실무 팀원 14명',
-  estimatedTime: '25~35분',
+  estimatedTime: '35~45분',
   organization: '누리미디어 AI 사업부',
 };
 
@@ -54,6 +54,17 @@ const scale = (id, section, title, question, helpText, tag, options = {}) =>
     ...options,
   });
 
+const chapter = (id, title, question, helpText) =>
+  q({
+    id,
+    type: 'sectionIntro',
+    section: '챕터 안내',
+    title,
+    question,
+    helpText,
+    required: false,
+  });
+
 const roleQuestion = (role, id, title, question, helpText, tag) =>
   q({
     id,
@@ -67,6 +78,12 @@ const roleQuestion = (role, id, title, question, helpText, tag) =>
   });
 
 export const questions = [
+  chapter(
+    'CHAPTER_BASIC',
+    '시작하기 전에',
+    '먼저 응답 기준을 맞춥니다.',
+    '역할, 최근 관여한 제품, 함께 일한 팀을 먼저 확인합니다. 개인을 구분하려는 목적이 아니라 뒤 문항을 본인 경험에 맞게 보여주기 위한 단계입니다.',
+  ),
   q({
     id: 'META_ROLE',
     type: 'singleChoice',
@@ -136,6 +153,33 @@ export const questions = [
     options: ['예', '아니오'],
   }),
 
+  chapter(
+    'CHAPTER_TEAM_EXPERIENCE',
+    '1. 팀에서 일하는 감각',
+    '이제 팀 안에서 얼마나 편하게 말하고, 몰입하고, 연결되어 일하는지 봅니다.',
+    '정답은 없습니다. 최근 몇 주 동안 실제로 느낀 안전감, 동기, 공정성, 자율성을 기준으로 답해주세요.',
+  ),
+  scale('PS01', 'J. 팀에서 일하는 감각', '실수 공유 안전감', '우리 팀에서는 실수나 어려움을 인정하고 공유해도 안전하다고 느낀다.', '최근 실수, 장애, 일정 지연, 판단 착오 같은 어려움을 공유했을 때의 느낌을 떠올려 답해주세요.', 'mistake-safety'),
+  scale('PS02', 'J. 팀에서 일하는 감각', '까다로운 이슈 제기', '우리 팀에서는 문제나 까다로운 이슈를 솔직하게 꺼낼 수 있다.', '회의, 메신저, 1:1 등에서 불편하거나 민감한 이야기를 꺼낼 수 있는지 기준으로 답해주세요.', 'candor'),
+  scale('PS03', 'J. 팀에서 일하는 감각', '새로운 시도 안전감', '우리 팀에서는 새로운 시도나 실험적 접근을 제안해도 안전하다고 느낀다.', '완전히 검증되지 않은 아이디어, 빠른 실험, 다른 방식의 제안을 할 때의 안전감을 기준으로 답해주세요.', 'risk-safety'),
+  scale('PS04', 'J. 팀에서 일하는 감각', '고유 역량 활용', '우리 팀에서 일하면서 나의 고유한 역량이 인정받고 활용되고 있다.', '본인의 강점이나 전문성이 실제 업무에서 쓰이고 있다고 느끼는지 기준으로 답해주세요.', 'strength-use'),
+  scale('EN01', 'J. 팀에서 일하는 감각', '일의 충족감', '지금 하고 있는 일에서 의미나 충족감을 느낀다.', '업무가 항상 즐겁다는 뜻은 아닙니다. 맡은 일이 의미나 보람으로 연결되는지 기준으로 답해주세요.', 'meaningful-work'),
+  scale('EN02', 'J. 팀에서 일하는 감각', '팀 연결감', '우리 팀 사람들과 연결되어 있다고 느낀다.', '친밀함의 정도보다, 필요한 때 함께 일하고 도움을 주고받는 연결감을 기준으로 답해주세요.', 'team-connection'),
+  scale('EN03', 'J. 팀에서 일하는 감각', '팀 방향에 대한 공감', '우리 팀이 향하는 방향과 내가 하는 일이 연결되어 있다고 느낀다.', '팀의 목표, 제품 방향, 본인의 업무가 서로 이어져 있다고 느끼는지 답해주세요.', 'mission-commitment'),
+  scale('EN04', 'J. 팀에서 일하는 감각', '1년 뒤 함께 일할 감각', '1년 뒤에도 이 팀에서 일하고 있을 것 같다고 느낀다.', '정확한 계획을 묻는 문항이 아닙니다. 현재 팀 경험을 바탕으로 한 가까운 미래 감각을 답해주세요.', 'future-intent'),
+  scale('EN05', 'J. 팀에서 일하는 감각', '기여 인정의 공정성', '우리 팀에서 기여가 공정하게 인정된다고 느낀다.', '성과 평가가 아니라, 본인과 동료의 기여가 필요한 만큼 보이고 인정되는지 기준으로 답해주세요.', 'fair-recognition'),
+  scale('EN06', 'J. 팀에서 일하는 감각', '결정 과정의 공정성', '우리 팀의 의사결정 과정이 공정하다고 느낀다.', '모든 의견이 채택되어야 한다는 뜻은 아닙니다. 결정 과정과 기준이 납득 가능한지 기준으로 답해주세요.', 'decision-fairness'),
+  scale('EN07', 'J. 팀에서 일하는 감각', '일하는 방식의 자율성', '내 업무를 수행하는 방식을 스스로 결정할 여지가 있다.', '무엇을 할지뿐 아니라, 어떻게 풀어갈지에 대한 자율성이 있는지 기준으로 답해주세요.', 'work-autonomy'),
+  scale('EN08', 'J. 팀에서 일하는 감각', '의견이 진지하게 다뤄진 경험', '내 의견이 진지하게 받아들여진 경험이 최근에 있다.', '의견이 최종 결정에 반영되었는지보다, 충분히 듣고 검토되었다고 느꼈는지 답해주세요.', 'voice-taken-seriously'),
+  scale('EN09', 'J. 팀에서 일하는 감각', '어려움을 털어놓을 동료', '우리 팀 안에 어려움을 솔직히 털어놓을 수 있는 동료가 있다.', '업무, 도메인, 기술, 일정 부담 등 어떤 어려움이든 의지할 수 있는 사람이 있는지 기준으로 답해주세요.', 'support-relationship'),
+  scale('EN10', 'J. 팀에서 일하는 감각', '다음 분기 방향 명확성', '우리 팀이 다음 분기에 어디로 향하는지 이해하고 있다.', '세부 일정 전체가 아니라, 다음 분기에 무엇을 우선할지 큰 방향을 이해하는지 기준으로 답해주세요.', 'next-quarter-clarity'),
+
+  chapter(
+    'CHAPTER_WORK_SYSTEM',
+    '2. 목표와 실행 흐름',
+    '이제 목표, 고객 신호, 요구사항, 결정 방식이 실제 실행으로 이어지는 흐름을 봅니다.',
+    '아래 문항은 누가 잘하고 못하는지를 묻지 않습니다. 일이 시작되고 결정되고 바뀌는 과정이 충분히 보이는지를 확인하기 위한 질문입니다.',
+  ),
   scale('A01', 'A. 사업 목표와 제품 우선순위', 'AI 사업부 목표 이해', 'AI 사업부가 지금 가장 중요하게 보는 사업 목표를 이해하고 있다.', '개인 목표가 아니라 조직 차원의 우선 사업 목표를 기준으로 답해주세요.', 'alignment'),
   scale('A02', 'A. 사업 목표와 제품 우선순위', '제품 우선순위 기준', 'AI Agent, AI Viewer, AI Idea, AI Reader, AI Editor 중 무엇을 먼저 볼지 정하는 기준이 명확하다.', '어떤 제품이 더 중요하다고 생각하는지가 아니라, 우선순위를 정하는 기준을 이해할 수 있는지 답해주세요.', 'portfolio'),
   scale('A03', 'A. 사업 목표와 제품 우선순위', '내 업무와 목표 연결', '현재 내가 하는 일이 AI 사업부의 제품 목표와 어떻게 연결되는지 이해하고 있다.', '본인의 최근 업무가 어떤 제품 목표나 사업 목표에 기여하는지 설명할 수 있는지 기준으로 답해주세요.', 'alignment'),
@@ -161,6 +205,12 @@ export const questions = [
   scale('D05', 'D. 결정 방식과 업무 집중', '결정 지연 해소', '결정이 늦어질 때 어디에서 막혔는지 확인하고 풀 수 있다.', '지연이 생겼을 때 원인과 다음 행동이 드러나는지 기준으로 답해주세요.', 'decision-latency'),
   scale('D06', 'D. 결정 방식과 업무 집중', '여러 일을 동시에 하는 문제 관리', '동시에 진행 중인 일이 너무 많아 중요한 일에 집중하기 어렵다는 문제가 관리되고 있다.', '업무량의 절대 크기보다 여러 일을 오가느라 집중이 깨지는 문제가 관리되는지 봅니다.', 'work-in-progress'),
 
+  chapter(
+    'CHAPTER_COLLAB_OPERATION',
+    '3. 협업과 운영 방식',
+    '이제 역할 간 협업, 제품별 운영 방식, 개발 환경, 지식 공유를 봅니다.',
+    '앞쪽이 일이 시작되는 흐름이었다면, 여기서는 일이 실제로 굴러가는 동안 무엇이 도와주고 무엇이 막히는지를 확인합니다.',
+  ),
   scale('E01', 'E. 역할 간 협업 방식', 'PM/프롬프트와 AI 개발 간 기대 결과', 'PM/프롬프트와 AI 엔지니어 사이에서 기대하는 결과물과 제약이 명확히 합의된다.', '프롬프트, 검색, 평가, 응답 품질 기대치가 서로 다르게 해석되지 않는지 봅니다.', 'pm-ai-interface', { roles: roleGroups.productAi }),
   scale('E02', 'E. 역할 간 협업 방식', 'AI와 백엔드 사이의 합의', 'AI 엔지니어와 백엔드 사이에서 데이터, API, 검색/AI 처리 흐름의 합의가 명확하다.', '입력/출력, 실패 처리, 데이터 흐름, 책임 범위가 필요한 만큼 정의되는지 기준으로 답해주세요.', 'ai-be-interface', { roles: roleGroups.aiWeb, allowNA: true }),
   scale('E03', 'E. 역할 간 협업 방식', '백엔드와 프론트엔드 구현 합의', '백엔드와 프론트엔드 사이에서 API, 상태, 에러, 로딩, 권한, 예외 케이스가 충분히 정의된다.', '화면 구현 중 뒤늦게 확인되는 요소가 반복되는지 떠올려 답해주세요.', 'web-interface', { roles: roleGroups.web }),
@@ -186,10 +236,16 @@ export const questions = [
   scale('H04', 'H. 지식 공유와 새 구성원 적응', '질문 경로', '질문이 있을 때 누구에게 물어봐야 하는지 대체로 명확하다.', '답을 바로 알 수 있는지가 아니라, 질문을 어디로 가져가야 하는지 알 수 있는지 봅니다.', 'knowledge-routing'),
 
   scale('I01', 'I. 일하는 속도와 학습 문화', '지속 가능한 속도', '현재 업무량과 속도는 품질을 크게 희생하지 않고 지속 가능하다.', '일시적으로 바쁜 상황보다, 현재 속도가 몇 달 이상 지속될 때의 품질과 피로도를 기준으로 답해주세요.', 'sustainability'),
-  scale('I02', 'I. 일하는 속도와 학습 문화', '걱정 없이 말할 수 있는 분위기', '일정, 품질, 기술 위험에 대해 불편한 이야기를 해도 불이익이나 무시를 걱정하지 않는다.', '실제로 우려를 제기할 수 있는 분위기와 반응을 기준으로 답해주세요.', 'psychological-safety'),
+  scale('I02', 'I. 일하는 속도와 학습 문화', '논의가 실행으로 이어지는 정도', '논의된 운영 문제는 작게라도 실제 실행으로 이어진다.', '회의나 회고에서 나온 개선 이야기가 작게라도 시도되는지 기준으로 답해주세요.', 'operational-follow-through'),
   scale('I03', 'I. 일하는 속도와 학습 문화', '배우는 방식의 문제 대응', '실패나 품질 문제가 발생했을 때 개인 탓보다 재발 방지와 학습에 집중한다.', '문제 발생 후 논의가 책임 추궁보다 원인과 예방에 가까운지 봅니다.', 'learning-culture'),
   scale('I04', 'I. 일하는 속도와 학습 문화', '워크샵에서 실제로 바꿀 수 있는지', '이번 워크샵에서 논의하면 실제로 바꿀 수 있는 운영 문제가 있다고 느낀다.', '모든 문제가 해결될 것이라는 기대가 아니라, 워크샵에서 구체적으로 바꿀 수 있는 영역이 있는지 답해주세요.', 'workshop-efficacy'),
 
+  chapter(
+    'CHAPTER_PRIORITY',
+    '4. 워크샵에서 먼저 다룰 주제',
+    '이제 지금까지의 응답을 바탕으로 무엇을 먼저 논의하면 좋을지 고릅니다.',
+    '선택형 문항은 우선순위를 좁히기 위한 단계입니다. 완벽한 답보다 현재 가장 가깝게 느껴지는 항목을 선택해주세요.',
+  ),
   q({
     id: 'CHOICE01',
     type: 'singleChoice',
@@ -310,63 +366,12 @@ export const questions = [
     minLength: 5,
   }),
 
-  q({
-    id: 'TEXT01',
-    type: 'longText',
-    section: '서술형 문항',
-    title: '유지할 운영 방식',
-    question: '현재 AI 사업부가 계속 유지해야 할 가장 좋은 운영 방식은 무엇입니까?',
-    helpText: '구체적인 사례가 있으면 쓰되, 개인 이름 없이 운영 방식 중심으로 적어주세요.',
-    minLength: 10,
-  }),
-  q({
-    id: 'TEXT02',
-    type: 'longText',
-    section: '서술형 문항',
-    title: '가장 크게 막히는 지점',
-    question: '현재 내 업무를 가장 많이 막는 지점 한 가지를 구체적으로 적어주세요.',
-    helpText: '특정 사람의 문제보다 정보 흐름, 결정 방식, 협업 구조, 도구, 기준, 일정 흐름 관점으로 적어주세요.',
-    minLength: 10,
-  }),
-  q({
-    id: 'TEXT03',
-    type: 'longText',
-    section: '서술형 문항',
-    title: '제품별 책임 범위가 모호한 지점',
-    question:
-      'Agent, Viewer, Idea, Reader, Editor 또는 공통 플랫폼 중 우선순위, 책임 범위, 운영 기준이 가장 모호하다고 느끼는 영역이 있다면 무엇이며, 왜 그렇습니까?',
-    helpText:
-      '특정 제품을 비판하기보다, 무엇을 기준으로 결정하고 누가 끝까지 챙기는지 모호한 지점을 적어주세요.',
-    minLength: 10,
-  }),
-  q({
-    id: 'TEXT04',
-    type: 'longText',
-    section: '서술형 문항',
-    title: '운영 제품과 CBT(사전 테스트)/실험 제품 기준',
-    question: '운영 제품과 CBT(사전 테스트)/실험 단계 제품을 구분해 관리하기 위해 가장 먼저 정리해야 할 기준은 무엇이라고 생각합니까?',
-    helpText: '공유 주기, 검증 수준, 정식 서비스 기준, 위험 체크 등 필요한 기준을 떠올려 답해주세요.',
-    minLength: 10,
-  }),
-  q({
-    id: 'TEXT05',
-    type: 'longText',
-    section: '서술형 문항',
-    title: '4주 동안 해볼 작은 개선 제안',
-    question: '다음 4주 동안 AI 사업부가 시도해볼 수 있는 작고 구체적인 개선을 하나 제안해주세요.',
-    helpText: '조직개편보다 작게 시작할 수 있는 회의, 문서, 결정 방식, 협업 방식 변경을 우선 적어주세요.',
-    minLength: 10,
-  }),
-  q({
-    id: 'TEXT06',
-    type: 'longText',
-    section: '서술형 문항',
-    title: '설문에서 빠진 중요한 내용',
-    question: '위 문항으로 충분히 담기지 않은 중요한 위험이나 개선 주제가 있다면 적어주세요.',
-    helpText: '응답하기 불편한 내용일수록 개인 식별 표현을 피하고, 운영 구조나 반복 패턴 중심으로 적어주세요.',
-    required: false,
-  }),
-
+  chapter(
+    'CHAPTER_ROLE_DETAIL',
+    '5. 본인 역할과 경험에 가까운 추가 질문',
+    '이제 앞에서 선택한 역할과 협업 경험에 맞는 질문만 이어집니다.',
+    '모든 사람에게 같은 문항이 보이지 않을 수 있습니다. 본인이 실제로 겪은 업무 범위 안에서만 답하면 됩니다.',
+  ),
   roleQuestion('제품/PM/프롬프트', 'PM01', '사용자 문제 중심 요구사항', '요구사항은 사용자 문제와 성공 기준을 기능 목록보다 먼저 다룬다.', '요구사항 문서나 논의에서 "무엇을 만들지"보다 "왜 필요한지"가 먼저 확인되는지 봅니다.', 'pm-requirement'),
   roleQuestion('제품/PM/프롬프트', 'PM02', '기술 제약 정보 접근', 'AI 모델, 검색, 데이터, 운영 제약을 고려해 기능 요구사항을 작성할 충분한 정보가 있다.', 'PM/프롬프트 관점에서 기술 제약을 이해하고 반영할 수 있는 정보가 충분한지 기준으로 답해주세요.', 'pm-ai-context'),
   roleQuestion('제품/PM/프롬프트', 'PM03', '요청을 우선순위로 바꾸는 기준', '영업/서비스/마케팅/콘텐츠 요청을 제품 우선순위로 바꾸는 기준이 명확하다.', '요청의 양이나 목소리 크기만으로 결정되지 않고, 판단 기준이 있는지 봅니다.', 'pm-prioritization'),
@@ -453,9 +458,73 @@ export const questions = [
     helpText: '사용성, 고객 반응, 품질, 운영 가능성, 사업성 중 어떤 기준을 볼지 정리되어 있는지 봅니다.',
     tag: 'cbt-productization',
   }),
+
+  chapter(
+    'CHAPTER_RETROSPECTIVE',
+    '6. 마지막 회고',
+    '마지막으로 지난 상반기를 돌아보고, 워크샵에서 꼭 남겨야 할 이야기를 적습니다.',
+    '서술형 응답은 원문 그대로 공유하지 않고 익명성이 드러나지 않게 요약합니다. 특정 개인 이름보다 상황, 흐름, 기준 중심으로 적어주세요.',
+  ),
+  q({
+    id: 'TEXT01',
+    type: 'longText',
+    section: '마지막 회고',
+    title: '유지할 점',
+    question: '지난 상반기에 우리 팀이 잘했고, 앞으로도 유지하면 좋을 점은 무엇입니까?',
+    helpText: '작은 습관, 협업 방식, 결정 방식, 제품 운영 방식 등 계속 가져가고 싶은 것을 적어주세요.',
+    minLength: 10,
+  }),
+  q({
+    id: 'TEXT02',
+    type: 'longText',
+    section: '마지막 회고',
+    title: '개선이 필요한 점',
+    question: '지난 상반기에 가장 답답했거나 개선이 필요했던 한 가지는 무엇입니까?',
+    helpText: '특정 사람보다 정보 흐름, 결정 방식, 협업 구조, 도구, 기준, 일정 흐름 관점으로 적어주세요.',
+    minLength: 10,
+  }),
+  q({
+    id: 'TEXT03',
+    type: 'longText',
+    section: '마지막 회고',
+    title: '하나만 바로 바꿀 수 있다면',
+    question: '하나만 즉시 바꿀 수 있다면, 우리 팀의 무엇을 바꾸고 싶습니까? 그 이유는 무엇입니까?',
+    helpText: '가장 시급하거나 가장 반복적으로 막히는 한 가지를 떠올려 적어주세요. 너무 큰 조직개편보다 실제 업무 흐름을 우선 봅니다.',
+    minLength: 10,
+  }),
+  q({
+    id: 'TEXT04',
+    type: 'longText',
+    section: '마지막 회고',
+    title: '4주 동안 해볼 작은 실험',
+    question: '다음 4주 동안 AI 사업부가 작게 실험해볼 만한 운영 개선 아이디어를 하나 제안해주세요.',
+    helpText: '회의, 문서, 결정 방식, 공유 방식, 협업 방식처럼 작게 시작하고 효과를 확인할 수 있는 아이디어를 적어주세요.',
+    minLength: 10,
+  }),
+  q({
+    id: 'TEXT05',
+    type: 'longText',
+    section: '마지막 회고',
+    title: '설문에서 빠진 중요한 내용',
+    question: '위 문항으로 충분히 담기지 않은 중요한 위험이나 개선 주제가 있다면 적어주세요.',
+    helpText: '응답하기 불편한 내용일수록 개인 식별 표현을 피하고, 운영 구조나 반복 패턴 중심으로 적어주세요.',
+    required: false,
+  }),
+  q({
+    id: 'NPS01',
+    type: 'singleChoice',
+    section: '마지막 회고',
+    title: '팀 추천 의향',
+    question: '현재 경험을 기준으로, 우리 팀에서 일하는 것을 가까운 동료에게 추천하겠습니까?',
+    helpText: '0은 전혀 추천하지 않음, 10은 매우 추천함입니다. 작은 표본에서는 단독 결론이 아니라 다음 설문과 비교할 기준점으로만 봅니다.',
+    options: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+    layout: 'scoreLine',
+    tag: 'team-recommendation',
+  }),
 ];
 
 export const axisMap = [
+  { axis: '팀 안전감과 몰입', tags: ['mistake-safety', 'candor', 'risk-safety', 'strength-use', 'meaningful-work', 'team-connection', 'mission-commitment', 'future-intent', 'fair-recognition', 'decision-fairness', 'work-autonomy', 'voice-taken-seriously', 'support-relationship', 'next-quarter-clarity', 'team-recommendation'] },
   { axis: '사업 목표와 제품 우선순위', tags: ['alignment', 'portfolio', 'outcome', 'prioritization'] },
   { axis: '고객과 사용자 의견 반영', tags: ['customer-signal', 'user-signal', 'stakeholder-loop', 'signal-conflict', 'discovery', 'external-feedback'] },
   { axis: '사용자 문제 확인과 요구사항', tags: ['requirement-quality', 'early-collaboration', 'change-management', 'ai-product-spec', 'definition-of-done', 'pm-requirement', 'pm-ai-context', 'pm-prioritization', 'pm-change-impact'] },
@@ -464,7 +533,7 @@ export const axisMap = [
   { axis: '제품별 운영 방식', tags: ['product-maturity', 'cbt-sharing', 'risk-tiering', 'productization', 'learning-transfer', 'cbt-purpose', 'cbt-sharing-rule', 'cbt-fast-build-risk', 'cbt-productization'] },
   { axis: '개발과 운영 환경', tags: ['observability', 'release-flow', 'change-impact', 'tech-debt-balance', 'incident-response', 'ai-learning-record', 'ai-stability-balance', 'web-fast-build-risk'] },
   { axis: '지식 공유와 새 구성원 적응', tags: ['onboarding', 'domain-knowledge', 'organizational-memory', 'knowledge-routing'] },
-  { axis: '일하는 속도와 학습 문화', tags: ['sustainability', 'psychological-safety', 'learning-culture', 'workshop-efficacy'] },
+  { axis: '일하는 속도와 학습 문화', tags: ['sustainability', 'operational-follow-through', 'learning-culture', 'workshop-efficacy'] },
 ];
 
 export function hasExternalModule(responses) {
@@ -505,11 +574,16 @@ export function isQuestionVisible(question, responses = {}) {
   return true;
 }
 
+export function isAnswerableQuestion(question) {
+  return question.type !== 'sectionIntro';
+}
+
 export function getVisibleQuestions(responses = {}) {
   return questions.filter((question) => isQuestionVisible(question, responses));
 }
 
 export function isAnswered(question, value) {
+  if (!isAnswerableQuestion(question)) return true;
   if (!question.required) return true;
   if (question.type === 'multiChoice') return Array.isArray(value) && value.length > 0;
   if (question.type === 'longText') {
@@ -527,5 +601,6 @@ export function getAnswerLabel(question, value) {
   return value ?? '';
 }
 
-export const totalQuestionCount = questions.length;
-export const baseVisibleQuestionCount = getVisibleQuestions({}).length;
+export const answerableQuestions = questions.filter(isAnswerableQuestion);
+export const totalQuestionCount = answerableQuestions.length;
+export const baseVisibleQuestionCount = getVisibleQuestions({}).filter(isAnswerableQuestion).length;

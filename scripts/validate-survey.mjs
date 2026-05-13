@@ -1,5 +1,7 @@
 import {
+  answerableQuestions,
   getVisibleQuestions,
+  isAnswerableQuestion,
   questions,
   roleOptions,
 } from '../src/data/questions.js';
@@ -20,6 +22,11 @@ questions.forEach((question) => {
   assert(question.section, `${question.id} has no section`);
   assert(question.question, `${question.id} has no question text`);
   assert(question.helpText || question.id.startsWith('TEXT'), `${question.id} has no helpText`);
+
+  if (question.type === 'sectionIntro') {
+    assert(question.required === false, `${question.id} section intro must not require an answer`);
+    return;
+  }
 
   if (['singleChoice', 'multiChoice'].includes(question.type)) {
     assert(Array.isArray(question.options) && question.options.length >= 2, `${question.id} has invalid options`);
@@ -72,19 +79,31 @@ assert(external.includes('E05') && !external.includes('E04'), 'Infra-specific co
 assert(designExternal.includes('E04') && !designExternal.includes('E05'), 'Design-specific collaboration routing failed');
 assert(cbt.includes('CBT01'), 'CBT routing failed');
 assert(choiceOther.includes('CHOICE06_OTHER'), 'Choice 기타 routing failed');
+assert(base[0] === 'CHAPTER_BASIC', 'Survey should start with a chapter intro');
+assert(base.includes('CHAPTER_TEAM_EXPERIENCE'), 'Team experience chapter intro missing');
+assert(base.includes('CHAPTER_RETROSPECTIVE'), 'Retrospective chapter intro missing');
+assert(answerableQuestions.some((question) => question.id === 'PS01'), 'Psychological safety questions missing');
+assert(answerableQuestions.some((question) => question.id === 'EN10'), 'Engagement questions missing');
+assert(answerableQuestions.some((question) => question.id === 'NPS01'), 'Team recommendation anchor missing');
 
-if (questions.length !== 82) {
-  warnings.push(`Expected 82 total questions from current source-of-truth implementation, got ${questions.length}`);
+if (questions.length !== 103) {
+  warnings.push(`Expected 103 survey pages from current implementation, got ${questions.length}`);
+}
+
+if (answerableQuestions.length !== 96) {
+  warnings.push(`Expected 96 answerable questions from current implementation, got ${answerableQuestions.length}`);
 }
 
 console.log('Survey validation summary');
-console.log(`- total questions: ${questions.length}`);
-console.log(`- base visible before routing: ${base.length}`);
-console.log(`- PM visible: ${pm.length}`);
-console.log(`- AI visible: ${ai.length}`);
-console.log(`- WEB visible: ${web.length}`);
-console.log(`- AI + external visible: ${external.length}`);
-console.log(`- AI + CBT visible: ${cbt.length}`);
+console.log(`- survey pages: ${questions.length}`);
+console.log(`- answerable questions: ${answerableQuestions.length}`);
+console.log(`- base visible pages before routing: ${base.length}`);
+console.log(`- base answerable before routing: ${getVisibleQuestions({}).filter(isAnswerableQuestion).length}`);
+console.log(`- PM visible pages: ${pm.length}`);
+console.log(`- AI visible pages: ${ai.length}`);
+console.log(`- WEB visible pages: ${web.length}`);
+console.log(`- AI + external visible pages: ${external.length}`);
+console.log(`- AI + CBT visible pages: ${cbt.length}`);
 
 if (warnings.length) {
   console.log('\nWarnings');

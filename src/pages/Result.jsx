@@ -10,7 +10,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Button from '../components/common/Button';
 import { AppShell, PageHeader, Panel } from '../components/common/Layout';
-import { QUESTION_VERSION, questions, surveyInfo } from '../data/questions';
+import { QUESTION_VERSION, answerableQuestions, surveyInfo } from '../data/questions';
 import {
   analysisService,
   respondentService,
@@ -44,10 +44,10 @@ function csvEscape(value) {
 }
 
 function buildCsv(allResponses) {
-  const header = ['respondentId', ...questions.map((question) => question.id)];
+  const header = ['respondentId', ...answerableQuestions.map((question) => question.id)];
   const rows = Object.entries(allResponses || {}).map(([uid, responses]) => [
     uid,
-    ...questions.map((question) => responses?.[question.id]?.value ?? ''),
+    ...answerableQuestions.map((question) => responses?.[question.id]?.value ?? ''),
   ]);
   return [header, ...rows].map((row) => row.map(csvEscape).join(',')).join('\n');
 }
@@ -87,14 +87,14 @@ const analysisConfigs = {
     description: '점수/선택 결과와 서술형 응답을 함께 보고 워크샵에서 논의할 주제와 4주 동안 해볼 작은 개선을 정리합니다.',
     buttonLabel: '종합 리포트 생성/갱신',
   },
-  onePage: {
-    type: 'onePage',
-    tabId: 'ai-one-page',
-    tabLabel: 'AI 원페이지',
-    eyebrow: 'AI 원페이지 분석',
-    title: '원페이지 AI 리포트',
-    description: '모든 문항을 한 장으로 읽히는 이야기형 리포트로 정리하고, 직무별로 건네는 짧은 메시지를 함께 보여줍니다.',
-    buttonLabel: '원페이지 리포트 생성/갱신',
+  letter: {
+    type: 'letter',
+    tabId: 'ai-letter',
+    tabLabel: '편지',
+    eyebrow: '편지형 AI 분석',
+    title: '편지',
+    description: '모든 문항을 한 장으로 읽히는 편지형 분석으로 정리하고, 직무별로 건네는 짧은 메시지를 함께 보여줍니다.',
+    buttonLabel: '편지 생성/갱신',
   },
   closedEnded: {
     type: 'closedEnded',
@@ -599,7 +599,7 @@ function analysisMatchesCurrentQuestions(analysis) {
       Object.entries(analysis.reports).filter(([, report]) => reportMatchesCurrentQuestions(report)),
     );
     if (!Object.keys(reports).length) return null;
-    const primary = reports.comprehensive || reports.onePage || reports.closedEnded || reports.textByQuestion;
+    const primary = reports.comprehensive || reports.letter || reports.closedEnded || reports.textByQuestion;
     return {
       ...analysis,
       result: primary?.result,
@@ -627,14 +627,14 @@ function mergeAnalysisReport(existingAnalysis, report) {
     ...previousReports,
     [report.analysisType]: report,
   };
-  const primary = reports.comprehensive || reports.onePage || reports.closedEnded || reports.textByQuestion || report;
+  const primary = reports.comprehensive || reports.letter || reports.closedEnded || reports.textByQuestion || report;
 
   return {
     result: primary.result,
     model: primary.model,
     reasoningEffort: primary.reasoningEffort,
     analyzedAt: Date.now(),
-    reportVersion: '2026-05-13-analysis-suite-v3-one-page',
+    reportVersion: '2026-05-13-analysis-suite-v4-letter',
     inputSummary: primary.inputSummary,
     reports,
   };
@@ -792,7 +792,7 @@ export default function Result() {
       <div className={styles.metrics}>
         <Metric label="응답 시작" value={`${dashboard.respondentCount}명`} hint="설문을 시작한 인원" />
         <Metric label="완료" value={`${dashboard.completedCount}명`} hint="최종 제출 기준" />
-        <Metric label="전체 문항" value={`${questions.length}개`} hint="직무별/추가 문항 포함" />
+        <Metric label="전체 문항" value={`${answerableQuestions.length}개`} hint="직무별/추가 문항 포함" />
         <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="한 번에 4개 리포트 생성" />
       </div>
 
