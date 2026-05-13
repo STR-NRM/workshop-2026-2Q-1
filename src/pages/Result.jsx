@@ -28,6 +28,8 @@ import styles from './Result.module.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
+const EXCEL_CSV_BOM = '\uFEFF';
+
 function download(filename, content, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -49,7 +51,11 @@ function buildCsv(allResponses) {
     uid,
     ...answerableQuestions.map((question) => responses?.[question.id]?.value ?? ''),
   ]);
-  return [header, ...rows].map((row) => row.map(csvEscape).join(',')).join('\n');
+  return [header, ...rows].map((row) => row.map(csvEscape).join(',')).join('\r\n');
+}
+
+function buildExcelCsv(allResponses) {
+  return `${EXCEL_CSV_BOM}${buildCsv(allResponses)}`;
 }
 
 function formatTime(timestamp) {
@@ -755,7 +761,7 @@ export default function Result() {
   };
 
   const exportCsv = () => {
-    download(`workshop-${Date.now()}-responses.csv`, buildCsv(allResponses), 'text/csv;charset=utf-8');
+    download(`workshop-${Date.now()}-responses.csv`, buildExcelCsv(allResponses), 'text/csv;charset=utf-8');
   };
 
   const axisChart = {
@@ -796,7 +802,7 @@ export default function Result() {
 
       <div className={styles.actions}>
         <Button variant="secondary" onClick={loadData} loading={loading}>새로고침</Button>
-        <Button variant="ghost" onClick={exportCsv}>CSV 내보내기</Button>
+        <Button variant="ghost" onClick={exportCsv}>Excel용 CSV 내보내기</Button>
         <Button variant="ghost" onClick={exportJson}>JSON 내보내기</Button>
       </div>
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
