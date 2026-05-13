@@ -1,0 +1,71 @@
+.shell {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px 16px 48px;
+}
+
+.container,
+.wideContainer {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.container {
+  max-width: 680px;
+}
+
+.wideContainer {
+  max-width: 1180px;
+}
+
+.panel {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.title {
+  color: var(--text);
+  font-size: 30px;
+  font-weight: 750;
+  line-height: 1.22;
+  letter-spacing: 0;
+}
+
+.description {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .shell {
+    padding: 18px 12px 40px;
+  }
+
+  .title {
+    font-size: 25px;
+  }
+}

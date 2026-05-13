@@ -1,0 +1,31 @@
+{
+  "rules": {
+    "surveys": {
+      "2026-2Q-1": {
+        "respondents": {
+          ".read": true,
+          "$uid": {
+            ".read": true,
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.hasChildren(['uid', 'lastUpdatedAt'])"
+          }
+        },
+        "responses": {
+          ".read": true,
+          "$uid": {
+            ".read": true,
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        },
+        "analysis": {
+          ".read": true,
+          ".write": false
+        },
+        "config": {
+          ".read": true,
+          ".write": false
+        }
+      }
+    }
+  }
+}

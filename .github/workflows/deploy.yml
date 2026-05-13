@@ -1,0 +1,64 @@
+# Deploy Vite React app to GitHub Pages
+name: Deploy static content to Pages
+
+on:
+  # Run manually after GitHub Pages is enabled for this repository.
+  # The current private-repo plan may not support Pages until the repo
+  # is made public or the organization plan is adjusted.
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          VITE_USE_LOCAL_STORE: 'false'
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: 'workshop-2026-2q-1.firebaseapp.com'
+          VITE_FIREBASE_DATABASE_URL: 'https://workshop-2026-2q-1-default-rtdb.asia-southeast1.firebasedatabase.app'
+          VITE_FIREBASE_PROJECT_ID: 'workshop-2026-2q-1'
+          VITE_FIREBASE_STORAGE_BUCKET: 'workshop-2026-2q-1.firebasestorage.app'
+          VITE_FIREBASE_MESSAGING_SENDER_ID: '132652637627'
+          VITE_FIREBASE_APP_ID: '1:132652637627:web:bbbac6cce87aa5767ef89e'
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

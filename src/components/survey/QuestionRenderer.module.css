@@ -1,0 +1,154 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+}
+
+.kicker {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.kicker strong {
+  flex: 0 0 auto;
+  color: var(--primary);
+}
+
+.title {
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.38;
+  letter-spacing: 0;
+}
+
+.help {
+  padding: 14px 16px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.options,
+.scaleGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  color: var(--text);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-muted);
+}
+
+.option:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.option:disabled {
+  cursor: not-allowed;
+  opacity: 0.44;
+}
+
+.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.optionMark {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  color: var(--surface);
+  background: var(--primary);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.option:not(.selected) .optionMark {
+  background: var(--border-strong);
+}
+
+.scoreLabel,
+.neutralLabel {
+  display: inline-flex;
+  min-width: 34px;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.neutralLabel {
+  color: var(--warning);
+}
+
+.optionHint {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.textAreaWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.textArea {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  padding: 14px 16px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  line-height: 1.65;
+}
+
+.textArea:focus {
+  outline: 3px solid var(--focus);
+  border-color: var(--primary);
+}
+
+.error {
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 20px 16px;
+  }
+
+  .title {
+    font-size: 21px;
+  }
+}
