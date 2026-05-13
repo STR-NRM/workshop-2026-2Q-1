@@ -10,7 +10,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Button from '../components/common/Button';
 import { AppShell, PageHeader, Panel } from '../components/common/Layout';
-import { QUESTION_VERSION, answerableQuestions, surveyInfo } from '../data/questions';
+import { QUESTION_VERSION, answerableQuestions, roleOptions, surveyInfo } from '../data/questions';
 import {
   analysisService,
   respondentService,
@@ -21,6 +21,8 @@ import {
   buildDashboardStats,
   filterCurrentSurveyData,
   formatAverage,
+  normalizeResponseValue,
+  responseValue,
   toPercent,
 } from '../utils/analytics';
 import { requestWorkshopAnalysis } from '../utils/openaiAnalysis';
@@ -492,11 +494,31 @@ function stripNarrativeReportChrome(text, analysisType) {
   return `# ${title}\n\n${cleaned}`;
 }
 
+function parseRoleMessageQuote(quote) {
+  const normalized = String(quote || '').replace(/\s*\n\s*/g, ' ').trim();
+  const match = normalized.match(/^\*\*([^*]+?)(?::)?\*\*\s*:?\s*["“]?([\s\S]*?)["”]?$/);
+  if (!match) return null;
+  const title = match[1].replace(/[:：]\s*$/, '').trim();
+  const message = match[2].trim();
+  if (!title.endsWith('께') || !message) return null;
+  return { title, message };
+}
+
+function RoleMessageQuote({ title, message, quoteKey }) {
+  return (
+    <div className={styles.roleMessageCard}>
+      <div className={styles.roleMessageRecipient}>{renderInline(title, `${quoteKey}-title`)}</div>
+      <p className={styles.roleMessageText}>{renderInline(message, `${quoteKey}-message`)}</p>
+    </div>
+  );
+}
+
 function MarkdownReport({ text }) {
   const lines = String(text || '').split('\n');
   const nodes = [];
   let list = [];
   let table = [];
+  let quoteBlock = [];
   const heroConclusion = lines.map(extractReportSignal).find((signal) => signal?.kind === 'conclusion');
   let skippedHeroConclusion = false;
 
@@ -508,6 +530,29 @@ function MarkdownReport({ text }) {
       </ul>,
     );
     list = [];
+  };
+
+  const flushQuote = () => {
+    if (!quoteBlock.length) return;
+    const quote = quoteBlock.join('\n').trim();
+    const roleMessage = parseRoleMessageQuote(quote);
+    if (roleMessage) {
+      nodes.push(
+        <RoleMessageQuote
+          key={`role-quote-${nodes.length}`}
+          quoteKey={`role-quote-${nodes.length}`}
+          title={roleMessage.title}
+          message={roleMessage.message}
+        />,
+      );
+    } else if (quote) {
+      nodes.push(
+        <blockquote key={`quote-${nodes.length}`} className={styles.reportQuote}>
+          {renderInline(quote, `quote-${nodes.length}`)}
+        </blockquote>,
+      );
+    }
+    quoteBlock = [];
   };
 
   const flushTable = () => {
@@ -550,10 +595,12 @@ function MarkdownReport({ text }) {
     if (!line) {
       flushList();
       flushTable();
+      flushQuote();
       return;
     }
     if (line.startsWith('|') && line.endsWith('|')) {
       flushList();
+      flushQuote();
       table.push(line);
       return;
     }
@@ -561,15 +608,10 @@ function MarkdownReport({ text }) {
     if (line.startsWith('>')) {
       flushList();
       const quote = line.replace(/^>\s?/, '').trim();
-      if (quote) {
-        nodes.push(
-          <blockquote key={`quote-${index}`} className={styles.reportQuote}>
-            {renderInline(quote, `quote-${index}`)}
-          </blockquote>,
-        );
-      }
+      if (quote) quoteBlock.push(quote);
       return;
     }
+    flushQuote();
     const signal = extractReportSignal(line);
     if (signal) {
       flushList();
@@ -609,6 +651,7 @@ function MarkdownReport({ text }) {
 
   flushList();
   flushTable();
+  flushQuote();
   return (
     <article className={styles.reportBody}>
       <ReportHeroConclusion signal={heroConclusion} />
@@ -640,13 +683,76 @@ function isRoleMessageQuestion(stat) {
   return roleMessageSectionKeywords.some((keyword) => stat.section?.includes(keyword));
 }
 
-function payloadForAnalysis(type, payload) {
+function roleFromResponses(responses) {
+  return normalizeResponseValue('META_ROLE', responseValue(responses?.META_ROLE));
+}
+
+function roleGroupTendency(stat) {
+  if (stat.type === 'scale5na') {
+    const average = stat.scale?.average;
+    const variance = stat.scale?.variance;
+    const naRatio = stat.scale?.naRatio;
+    if (average !== null && average !== undefined && average < 3) return '어려움을 느끼는 쪽';
+    if (average !== null && average !== undefined && average >= 4) return '상대적으로 편하게 느끼는 쪽';
+    if (variance !== null && variance !== undefined && variance >= 1.2) return '사람마다 다르게 느끼는 쪽';
+    if (naRatio !== null && naRatio !== undefined && naRatio >= 0.3) return '판단하기 어렵다는 신호가 있는 쪽';
+    return '중간 정도로 느끼는 쪽';
+  }
+
+  if (stat.type === 'singleChoice' || stat.type === 'multiChoice') {
+    const labels = (stat.choices || []).slice(0, 3).map((choice) => choice.label);
+    return labels.length ? `자주 보인 선택: ${labels.join(', ')}` : null;
+  }
+
+  return null;
+}
+
+function buildRoleGroupContexts(allResponses, respondents) {
+  return roleOptions.map((role) => {
+    const groupResponses = Object.fromEntries(
+      Object.entries(allResponses || {}).filter(([, responses]) => roleFromResponses(responses) === role),
+    );
+    const groupRespondents = Object.fromEntries(
+      Object.entries(respondents || {}).filter(([uid]) => groupResponses[uid]),
+    );
+    const groupDashboard = buildDashboardStats(groupResponses, groupRespondents);
+    const groupPayload = buildAiAnalysisPayload(groupDashboard, groupResponses, groupRespondents);
+
+    return {
+      role,
+      commonResponseSignals: groupPayload.questionStats
+        .filter((stat) => stat.type !== 'longText')
+        .map((stat) => ({
+          id: stat.id,
+          section: stat.section,
+          title: stat.title,
+          question: stat.question,
+          signal: roleGroupTendency(stat),
+        }))
+        .filter((stat) => stat.signal),
+      textResponses: groupPayload.questionStats
+        .filter((stat) => stat.type === 'longText' && stat.textValues?.length)
+        .map((stat) => ({
+          id: stat.id,
+          section: stat.section,
+          title: stat.title,
+          question: stat.question,
+          textValues: stat.textValues,
+        })),
+    };
+  });
+}
+
+function payloadForAnalysis(type, payload, allResponses = {}, respondents = {}) {
   if (type === 'closedEnded') return filterPayloadQuestions(payload, (stat) => stat.type !== 'longText');
   if (type === 'textByQuestion') {
     return filterPayloadQuestions(payload, (stat) => stat.type === 'longText', { includeAxisStats: false });
   }
   if (type === 'roleMessages') {
-    return filterPayloadQuestions(payload, (stat) => isRoleMessageQuestion(stat) || stat.type === 'longText', { includeAxisStats: false });
+    return {
+      ...filterPayloadQuestions(payload, (stat) => isRoleMessageQuestion(stat) || stat.type === 'longText', { includeAxisStats: false }),
+      roleGroupContexts: buildRoleGroupContexts(allResponses, respondents),
+    };
   }
   return payload;
 }
@@ -812,7 +918,7 @@ export default function Result() {
       const generatedReports = await Promise.all(
         allAnalysisTypes.map((analysisType) => requestWorkshopAnalysis({
           apiKey: openAiKey,
-          payload: payloadForAnalysis(analysisType, payload),
+          payload: payloadForAnalysis(analysisType, payload, allResponses, respondents),
           analysisType,
         })),
       );

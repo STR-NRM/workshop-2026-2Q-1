@@ -279,7 +279,7 @@ function summarizeQuestionStat(stat) {
   if (question.type === 'longText') {
     return {
       ...base,
-      textValues: (stat.textValues || []).slice(0, 24),
+      textValues: stat.textValues || [],
     };
   }
 

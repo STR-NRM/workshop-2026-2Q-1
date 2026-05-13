@@ -928,6 +928,49 @@
   color: var(--text);
 }
 
+.roleMessageCard {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.roleMessageRecipient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.roleMessageRecipient::before {
+  content: "";
+  flex: 0 0 24px;
+  width: 24px;
+  height: 2px;
+  background: var(--text);
+}
+
+.roleMessageText {
+  margin: 0;
+  padding: 15px 16px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border-left: 3px solid var(--text);
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.roleMessageText strong {
+  color: var(--text);
+}
+
 .reportList {
   display: flex;
   flex-direction: column;
