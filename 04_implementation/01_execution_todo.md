@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.8 결과 화면 용어 정리, AI 리포트 3개 화면 분리, 모든 AI 생성 버튼의 3종 동시 생성 구조 반영.
+- 업데이트 내용: v1.9 Firebase 현실형 테스트 응답 10명 투입, AI 리포트 핵심 문장 강조 UI와 10단어 프롬프트 규칙 반영.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` production-ready 개발
 
@@ -71,6 +71,8 @@
 - [x] AI 분석 결과 Firebase 저장 경로 작성
 - [x] 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트 작성
 - [x] 긴 AI 리포트를 읽기 쉬운 섹션/목록/표 형태로 표시
+- [x] 한 문장 결론, 한문장 정리, 한문장 제안을 별도 강조 박스로 렌더링
+- [x] AI 핵심 문장 10단어 이내 작성 규칙 반영
 
 ### Phase 5. 검증 루프
 
@@ -99,6 +101,7 @@
 - [x] GitHub 인증 상태 확인
 - [x] 로컬 작업 브랜치 생성
 - [x] GitHub push 진행
+- [x] Firebase에 현실형 테스트 응답 10명치 추가
 
 ## 3. 현재 외부 연동 상태
 
@@ -117,6 +120,7 @@
 - 로컬 QA: `VITE_USE_LOCAL_STORE=true`로 설문 완주와 결과 화면 확인 완료.
 - Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 Firebase 모드 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
 - Browser plugin QA 참고: Codex 인앱 브라우저에서는 Firebase Auth 네트워크 오류가 발생했으나, 동일 설정이 Node SDK와 사용자의 Chrome에서는 정상 동작했다.
+- Firebase seed QA: `seed-2026-05-13-realistic-10` 배치로 10명치 completed 응답 추가 완료. 기존 응답 2건을 보존해 현재 Firebase 총 응답 세션은 12건이다.
 
 ## 2. 완료 기준
 

@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.7 결과 화면 용어 정리, AI 리포트 3개 화면 분리, 모든 AI 생성 버튼의 3종 동시 생성 구조 반영.
+- 업데이트 내용: v1.8 Firebase 현실형 테스트 응답 10명 투입, AI 리포트 핵심 문장 강조 UI와 10단어 프롬프트 규칙 반영.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` 설문 앱
 
@@ -44,6 +44,8 @@
 - AI 분석 결과 Firebase 저장
 - 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트
 - 긴 리포트를 섹션/목록/표로 읽기 쉽게 표시하는 결과 화면
+- 한 문장 결론, 한문장 정리, 한문장 제안을 별도 강조 박스로 표시
+- AI 핵심 문장은 큰따옴표와 10단어 이내 규칙으로 생성하도록 프롬프트 강화
 - Firebase RTDB rules 배포본
 - GitHub Pages workflow
 
@@ -79,6 +81,7 @@ npm audit --omit=dev
 - GitHub Pages enablement 시도 결과 현재 private repo plan에서는 지원되지 않음을 확인하고, workflow를 수동 실행용으로 조정
 - Firebase Auth Anonymous provider 활성화
 - Firebase RTDB rules 재배포
+- Firebase에 현실형 테스트 응답 10명치 추가. 배치 ID는 `seed-2026-05-13-realistic-10`이며 기존 응답 2건은 보존했다.
 
 ## 3. 보안/혼입 방지 확인
 

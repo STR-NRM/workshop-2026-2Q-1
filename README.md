@@ -57,7 +57,7 @@ AI analysis runs from the result page through three separate report tabs: `AI ì¢
 
 This keeps GitHub Pages deployment simple and avoids Firebase Cloud Functions/Blaze requirements. The OpenAI key is not committed, not added to GitHub Actions secrets, and not saved to Firebase. It is used only for that browser request.
 
-Each report prompt requires an `Executive Summary` first, with a one-sentence conclusion, an easy analysis summary, and 3-5 action bullets before detailed sections.
+Each report prompt requires an `Executive Summary` first, with a 10-word-or-shorter one-sentence conclusion, an easy analysis summary, and 3-5 action bullets before detailed sections. The result UI highlights the conclusion, section summary, and section proposal as distinct visual callouts.
 
 Do not commit `.env.local`, OpenAI keys, Firebase service account JSON files, or GitHub tokens.
 

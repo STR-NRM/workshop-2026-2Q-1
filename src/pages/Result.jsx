@@ -372,11 +372,65 @@ function isTableSeparator(line) {
   return tableCells(line).every((cell) => /^:?-{3,}:?$/.test(cell));
 }
 
+function cleanSignalText(text) {
+  return String(text || '')
+    .trim()
+    .replace(/^\*\*\s*/, '')
+    .replace(/\s*\*\*$/, '')
+    .replace(/^["'“”]+/, '')
+    .replace(/["'“”]+$/, '')
+    .trim();
+}
+
+function extractReportSignal(line) {
+  const normalized = String(line || '')
+    .replace(/^[-*]\s+/, '')
+    .replace(/^\d+\.\s+/, '')
+    .trim()
+    .replace(/^\*\*/, '');
+  const match = normalized.match(/^(한\s*문장\s*결론|한문장\s*결론|한\s*문장\s*정리|한문장\s*정리|한\s*문장\s*제안|한문장\s*제안)\s*:\s*(.+)$/);
+  if (!match) return null;
+
+  const label = match[1].replace(/\s+/g, '');
+  const text = cleanSignalText(match[2]);
+  if (!text) return null;
+  if (label.includes('결론')) return { kind: 'conclusion', label: '한 문장 결론', text };
+  if (label.includes('제안')) return { kind: 'suggestion', label: '한문장 제안', text };
+  return { kind: 'summary', label: '한문장 정리', text };
+}
+
+function ReportHeroConclusion({ signal }) {
+  if (!signal) return null;
+  return (
+    <div className={styles.reportHeroConclusion}>
+      <span>{signal.label}</span>
+      <strong>“{signal.text}”</strong>
+    </div>
+  );
+}
+
+function ReportCallout({ signal }) {
+  const kindClass = {
+    conclusion: styles.reportCalloutConclusion,
+    summary: styles.reportCalloutSummary,
+    suggestion: styles.reportCalloutSuggestion,
+  }[signal.kind];
+
+  return (
+    <div className={`${styles.reportCallout} ${kindClass}`}>
+      <span>{signal.label}</span>
+      <strong>“{signal.text}”</strong>
+    </div>
+  );
+}
+
 function MarkdownReport({ text }) {
   const lines = String(text || '').split('\n');
   const nodes = [];
   let list = [];
   let table = [];
+  const heroConclusion = lines.map(extractReportSignal).find((signal) => signal?.kind === 'conclusion');
+  let skippedHeroConclusion = false;
 
   const flushList = () => {
     if (!list.length) return;
@@ -436,6 +490,16 @@ function MarkdownReport({ text }) {
       return;
     }
     flushTable();
+    const signal = extractReportSignal(line);
+    if (signal) {
+      flushList();
+      if (signal.kind === 'conclusion' && !skippedHeroConclusion) {
+        skippedHeroConclusion = true;
+        return;
+      }
+      nodes.push(<ReportCallout key={`signal-${index}`} signal={signal} />);
+      return;
+    }
     if (line.startsWith('# ')) {
       flushList();
       nodes.push(<h2 key={index}>{line.replace(/^#\s*/, '')}</h2>);
@@ -465,7 +529,12 @@ function MarkdownReport({ text }) {
 
   flushList();
   flushTable();
-  return <article className={styles.reportBody}>{nodes}</article>;
+  return (
+    <article className={styles.reportBody}>
+      <ReportHeroConclusion signal={heroConclusion} />
+      {nodes}
+    </article>
+  );
 }
 
 function filterPayloadQuestions(payload, predicate, options = {}) {

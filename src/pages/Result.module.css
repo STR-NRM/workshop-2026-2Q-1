@@ -618,8 +618,36 @@
 .reportBody {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   color: var(--text);
+}
+
+.reportHeroConclusion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  color: var(--surface);
+  background: var(--text);
+  border-radius: var(--radius);
+}
+
+.reportHeroConclusion span,
+.reportCallout span {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.reportHeroConclusion span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.reportHeroConclusion strong {
+  max-width: 980px;
+  color: var(--surface);
+  font-size: 30px;
+  line-height: 1.28;
 }
 
 .reportBody h2 {
@@ -644,6 +672,47 @@
   color: var(--text);
   font-size: 16px;
   line-height: 1.5;
+}
+
+.reportCallout {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 15px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.reportCallout strong {
+  font-size: 19px;
+  line-height: 1.38;
+}
+
+.reportCalloutSummary {
+  background: var(--surface);
+}
+
+.reportCalloutSummary span {
+  color: var(--text-muted);
+}
+
+.reportCalloutSuggestion {
+  color: var(--surface);
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.reportCalloutSuggestion span,
+.reportCalloutSuggestion strong {
+  color: var(--surface);
+}
+
+.reportCalloutConclusion {
+  background: var(--surface-muted);
+}
+
+.reportCalloutConclusion span {
+  color: var(--text-muted);
 }
 
 .reportBody p,

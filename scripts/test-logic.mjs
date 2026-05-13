@@ -102,6 +102,7 @@ globalThis.fetch = async (url, options) => {
   assert.match(body.input, /그래서 무엇을 해야 하나/);
   assert.match(body.input, /한문장 정리/);
   assert.match(body.input, /한문장 제안/);
+  assert.match(body.input, /10단어 이내/);
   assert.match(body.input, /종합 리포트/);
   return {
     ok: true,
