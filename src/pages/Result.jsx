@@ -78,6 +78,15 @@ function SectionTitle({ eyebrow, title, description }) {
 }
 
 const analysisConfigs = {
+  letter: {
+    type: 'letter',
+    tabId: 'ai-letter',
+    tabLabel: '편지',
+    eyebrow: '편지형 AI 분석',
+    title: '편지',
+    description: '모든 문항을 한 장으로 읽히는 편지형 분석으로 정리하고, 직무별로 건네는 메시지를 함께 보여줍니다.',
+    buttonLabel: '편지 생성/갱신',
+  },
   comprehensive: {
     type: 'comprehensive',
     tabId: 'ai-comprehensive',
@@ -86,15 +95,6 @@ const analysisConfigs = {
     title: '종합 AI 리포트',
     description: '점수/선택 결과와 서술형 응답을 함께 보고 워크샵에서 논의할 주제와 4주 동안 해볼 작은 개선을 정리합니다.',
     buttonLabel: '종합 리포트 생성/갱신',
-  },
-  letter: {
-    type: 'letter',
-    tabId: 'ai-letter',
-    tabLabel: '편지',
-    eyebrow: '편지형 AI 분석',
-    title: '편지',
-    description: '모든 문항을 한 장으로 읽히는 편지형 분석으로 정리하고, 직무별로 건네는 짧은 메시지를 함께 보여줍니다.',
-    buttonLabel: '편지 생성/갱신',
   },
   closedEnded: {
     type: 'closedEnded',
@@ -117,6 +117,13 @@ const analysisConfigs = {
 };
 
 const allAnalysisTypes = Object.keys(analysisConfigs);
+const basicTabs = [
+  ['overview', '요약'],
+  ['signals', '먼저 볼 신호'],
+  ['questions', '문항별'],
+  ['text', '서술형'],
+];
+const aiTabs = Object.values(analysisConfigs).map((config) => [config.tabId, config.tabLabel]);
 
 function percent(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return 0;
@@ -599,7 +606,7 @@ function analysisMatchesCurrentQuestions(analysis) {
       Object.entries(analysis.reports).filter(([, report]) => reportMatchesCurrentQuestions(report)),
     );
     if (!Object.keys(reports).length) return null;
-    const primary = reports.comprehensive || reports.letter || reports.closedEnded || reports.textByQuestion;
+    const primary = reports.letter || reports.comprehensive || reports.closedEnded || reports.textByQuestion;
     return {
       ...analysis,
       result: primary?.result,
@@ -627,14 +634,14 @@ function mergeAnalysisReport(existingAnalysis, report) {
     ...previousReports,
     [report.analysisType]: report,
   };
-  const primary = reports.comprehensive || reports.letter || reports.closedEnded || reports.textByQuestion || report;
+  const primary = reports.letter || reports.comprehensive || reports.closedEnded || reports.textByQuestion || report;
 
   return {
     result: primary.result,
     model: primary.model,
     reasoningEffort: primary.reasoningEffort,
     analyzedAt: Date.now(),
-    reportVersion: '2026-05-13-analysis-suite-v4-letter',
+    reportVersion: '2026-05-13-analysis-suite-v5-warmer-letter',
     inputSummary: primary.inputSummary,
     reports,
   };
@@ -767,6 +774,11 @@ export default function Result() {
   const activeAnalysisConfig = Object.values(analysisConfigs).find((config) => config.tabId === activeTab);
   const activeReport = activeAnalysisConfig ? getStoredReport(analysis, activeAnalysisConfig.type) : null;
   const isRunningAllAnalyses = allAnalysisTypes.every((type) => analysisRunningTypes.includes(type));
+  const activeResultMode = activeAnalysisConfig ? 'ai' : 'basic';
+  const visibleTabs = activeResultMode === 'ai' ? aiTabs : basicTabs;
+  const changeResultMode = (mode) => {
+    setActiveTab(mode === 'ai' ? analysisConfigs.letter.tabId : 'overview');
+  };
 
   return (
     <AppShell wide>
@@ -796,14 +808,33 @@ export default function Result() {
         <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="한 번에 4개 리포트 생성" />
       </div>
 
+      <div className={styles.modeSwitch} role="group" aria-label="결과 화면 구분">
+        <button
+          type="button"
+          className={activeResultMode === 'basic' ? styles.activeMode : ''}
+          onClick={() => changeResultMode('basic')}
+        >
+          <strong>기본 결과</strong>
+          <span>AI 없이 바로 계산한 요약, 신호, 문항별 결과입니다.</span>
+        </button>
+        <button
+          type="button"
+          className={activeResultMode === 'ai' ? styles.activeMode : ''}
+          onClick={() => changeResultMode('ai')}
+        >
+          <strong>AI 분석</strong>
+          <span>편지, 종합 리포트, 선택형/서술형 리포트를 따로 봅니다.</span>
+        </button>
+      </div>
+
+      <div className={styles.modeGuide}>
+        {activeResultMode === 'ai'
+          ? 'AI 분석은 해석을 돕는 보조 자료입니다. 편지를 먼저 읽고, 필요하면 종합·선택형·서술형 리포트로 근거를 확인하세요.'
+          : '기본 결과는 응답을 그대로 집계한 화면입니다. 먼저 숫자와 원문 신호를 확인한 뒤, AI 분석에서 해석을 보완하세요.'}
+      </div>
+
       <div className={styles.tabs}>
-        {[
-          ['overview', '요약'],
-          ['signals', '먼저 볼 신호'],
-          ['questions', '문항별'],
-          ['text', '서술형'],
-          ...Object.values(analysisConfigs).map((config) => [config.tabId, config.tabLabel]),
-        ].map(([id, label]) => (
+        {visibleTabs.map(([id, label]) => (
           <button
             key={id}
             type="button"
@@ -932,21 +963,23 @@ export default function Result() {
           <SectionTitle
             eyebrow="서술형 응답"
             title="서술형 응답"
-            description="누군지 알 수 있는 표현은 워크샵 공유 전에 반드시 제거해야 합니다."
+            description="서술형 문항과 기타 선택 후 입력한 응답을 함께 봅니다. 누군지 알 수 있는 표현은 워크샵 공유 전에 반드시 제거해야 합니다."
           />
           <div className={styles.textList}>
             {dashboard.questionStats
-              .filter((stat) => stat.question.type === 'longText')
+              .filter((stat) => stat.question.type === 'longText' && stat.textValues?.length)
               .map((stat) => (
                 <section key={stat.question.id}>
                   <h3>{stat.question.id}. {stat.question.title}</h3>
-                  {stat.textValues?.length ? (
-                    stat.textValues.map((text, index) => <blockquote key={`${stat.question.id}-${index}`}>{text}</blockquote>)
-                  ) : (
-                    <p>응답 없음</p>
-                  )}
+                  {stat.textValues.map((text, index) => <blockquote key={`${stat.question.id}-${index}`}>{text}</blockquote>)}
                 </section>
               ))}
+            {dashboard.questionStats.every((stat) => stat.question.type !== 'longText' || !stat.textValues?.length) ? (
+              <div className={styles.emptyState}>
+                <strong>아직 서술형 응답이 없습니다.</strong>
+                <span>서술형 문항 또는 기타 입력 응답이 제출되면 여기에 표시됩니다.</span>
+              </div>
+            ) : null}
           </div>
         </Panel>
       ) : null}

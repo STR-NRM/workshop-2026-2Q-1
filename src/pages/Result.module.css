@@ -41,6 +41,66 @@
   line-height: 1.1;
 }
 
+.modeSwitch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.modeSwitch button {
+  display: flex;
+  min-height: 76px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  padding: 15px 16px;
+  color: var(--text);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.modeSwitch button:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-muted);
+}
+
+.modeSwitch strong {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.modeSwitch span {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.modeSwitch .activeMode {
+  color: var(--surface);
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.modeSwitch .activeMode span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.modeGuide {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 .tabs {
   display: flex;
   gap: 4px;
@@ -837,6 +897,7 @@
 
 @media (max-width: 980px) {
   .metrics,
+  .modeSwitch,
   .grid,
   .signalCards,
   .overviewCards,

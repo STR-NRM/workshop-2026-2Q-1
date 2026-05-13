@@ -1,5 +1,5 @@
 export const SURVEY_ID = '2026-2Q-1';
-export const QUESTION_VERSION = '2026-05-13-v1.5';
+export const QUESTION_VERSION = '2026-05-13-v1.6';
 
 export const surveyInfo = {
   title: '2026 상반기 AI 사업부 일하는 방식 점검 설문',
@@ -266,6 +266,16 @@ export const questions = [
       '새 구성원 적응/문서화 부족',
       '기타',
     ],
+  }),
+  q({
+    id: 'CHOICE01_OTHER',
+    type: 'longText',
+    section: '객관식 문항',
+    condition: 'choice01Other',
+    title: '기타 막히는 지점',
+    question: '기타를 선택했다면, 현재 일이 가장 많이 막히는 지점을 적어주세요.',
+    helpText: '선택지에 가까운 항목이 없을 때만 간단히 적어주세요. 문제를 겪는 사람보다 일이 막히는 흐름을 중심으로 써주세요.',
+    minLength: 5,
   }),
   q({
     id: 'CHOICE02',
@@ -570,6 +580,9 @@ export function isQuestionVisible(question, responses = {}) {
   }
   if (question.condition === 'choice06Other') {
     return responses.CHOICE06 === '기타';
+  }
+  if (question.condition === 'choice01Other') {
+    return responses.CHOICE01 === '기타';
   }
   return true;
 }

@@ -64,6 +64,9 @@ const cbt = getVisibleQuestions({
 const choiceOther = getVisibleQuestions({
   CHOICE06: '기타',
 }).map((question) => question.id);
+const bottleneckOther = getVisibleQuestions({
+  CHOICE01: '기타',
+}).map((question) => question.id);
 
 assert(base.includes('META_ROLE'), 'Base visible questions must include META_ROLE');
 assert(!base.includes('PM01'), 'Role questions must not be visible before role selection');
@@ -79,6 +82,7 @@ assert(external.includes('E05') && !external.includes('E04'), 'Infra-specific co
 assert(designExternal.includes('E04') && !designExternal.includes('E05'), 'Design-specific collaboration routing failed');
 assert(cbt.includes('CBT01'), 'CBT routing failed');
 assert(choiceOther.includes('CHOICE06_OTHER'), 'Choice 기타 routing failed');
+assert(bottleneckOther.includes('CHOICE01_OTHER'), 'Bottleneck 기타 routing failed');
 assert(base[0] === 'CHAPTER_BASIC', 'Survey should start with a chapter intro');
 assert(base.includes('CHAPTER_TEAM_EXPERIENCE'), 'Team experience chapter intro missing');
 assert(base.includes('CHAPTER_RETROSPECTIVE'), 'Retrospective chapter intro missing');
@@ -86,12 +90,12 @@ assert(answerableQuestions.some((question) => question.id === 'PS01'), 'Psycholo
 assert(answerableQuestions.some((question) => question.id === 'EN10'), 'Engagement questions missing');
 assert(answerableQuestions.some((question) => question.id === 'NPS01'), 'Team recommendation anchor missing');
 
-if (questions.length !== 103) {
-  warnings.push(`Expected 103 survey pages from current implementation, got ${questions.length}`);
+if (questions.length !== 104) {
+  warnings.push(`Expected 104 survey pages from current implementation, got ${questions.length}`);
 }
 
-if (answerableQuestions.length !== 96) {
-  warnings.push(`Expected 96 answerable questions from current implementation, got ${answerableQuestions.length}`);
+if (answerableQuestions.length !== 97) {
+  warnings.push(`Expected 97 answerable questions from current implementation, got ${answerableQuestions.length}`);
 }
 
 console.log('Survey validation summary');

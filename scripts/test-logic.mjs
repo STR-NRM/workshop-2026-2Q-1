@@ -65,6 +65,10 @@ const otherVisible = getVisibleQuestions({ CHOICE06: '기타' });
 assert.ok(otherVisible.some((question) => question.id === 'CHOICE06_OTHER'));
 const notOtherVisible = getVisibleQuestions({ CHOICE06: '개발/운영' });
 assert.ok(!notOtherVisible.some((question) => question.id === 'CHOICE06_OTHER'));
+const bottleneckOtherVisible = getVisibleQuestions({ CHOICE01: '기타' });
+assert.ok(bottleneckOtherVisible.some((question) => question.id === 'CHOICE01_OTHER'));
+const bottleneckNotOtherVisible = getVisibleQuestions({ CHOICE01: '결정 속도와 권한' });
+assert.ok(!bottleneckNotOtherVisible.some((question) => question.id === 'CHOICE01_OTHER'));
 
 const textQuestion = questions.find((question) => question.id === 'TEXT01');
 assert.equal(isAnswered(textQuestion, '짧음'), false);
@@ -104,7 +108,8 @@ const dashboard = buildDashboardStats(
       A01: { value: 5 },
       A02: { value: 2 },
       META_ROLE: { value: 'AI 엔지니어링' },
-      CHOICE01: { value: '요구사항 명확성' },
+      CHOICE01: { value: '기타' },
+      CHOICE01_OTHER: { value: '선택지로는 설명하기 어려운 데이터 확인 흐름이 막힙니다.' },
       TEXT01: { value: '유지할 운영 방식 예시입니다.' },
     },
     user2: {
@@ -125,6 +130,8 @@ assert.equal(dashboard.respondentCount, 2);
 assert.equal(dashboard.completedCount, 1);
 assert.ok(dashboard.questionStats.find((stat) => stat.question.id === 'A01').scale.average === 4);
 assert.equal(dashboard.questionStats.find((stat) => stat.question.id === 'CHOICE01').choice['결정 속도와 권한'], 1);
+assert.equal(dashboard.questionStats.find((stat) => stat.question.id === 'CHOICE01').choice['기타'], 1);
+assert.ok(dashboard.questionStats.find((stat) => stat.question.id === 'CHOICE01_OTHER').textValues[0].includes('데이터 확인 흐름'));
 
 const aiPayload = {
   survey: { id: '2026-2Q-1', questionVersion: 'test' },
