@@ -18,6 +18,10 @@ assert.equal(hasExternalModule({ META_EXTERNAL: ['응답하지 않음'] }), fals
 assert.equal(hasExternalModule({ META_EXTERNAL: ['서비스/디자인'] }), true);
 assert.equal(hasCbtModule({ META_CBT: '예' }), true);
 assert.equal(hasCbtModule({ META_CBT: '아니오' }), false);
+assert.equal(questions.some((question) => question.options?.includes('응답하지 않음')), false);
+assert.equal(questions.find((question) => question.id === 'META_WORKSTREAM').maxSelections, undefined);
+assert.equal(questions.find((question) => question.id === 'A01').allowNA, undefined);
+assert.equal(questions.find((question) => question.id === 'B01').allowNA, true);
 
 const visible = getVisibleQuestions({
   META_ROLE: '웹 엔지니어링(FE/BE)',
@@ -28,6 +32,7 @@ assert.ok(visible.some((question) => question.id === 'WEB01'));
 assert.ok(visible.some((question) => question.id === 'EXT01'));
 assert.ok(visible.some((question) => question.id === 'CBT01'));
 assert.ok(!visible.some((question) => question.id === 'PM01'));
+assert.ok(!visible.some((question) => question.id === 'AI01'));
 
 const textQuestion = questions.find((question) => question.id === 'TEXT01');
 assert.equal(isAnswered(textQuestion, '짧음'), false);
@@ -94,6 +99,7 @@ globalThis.fetch = async (url, options) => {
   assert.equal(body.model, 'gpt-5.5');
   assert.equal(body.reasoning.effort, 'high');
   assert.match(body.input, /# Executive Summary/);
+  assert.match(body.input, /종합 리포트/);
   return {
     ok: true,
     json: async () => ({ output_text: '# Executive Summary\n- 테스트 리포트' }),
@@ -102,6 +108,8 @@ globalThis.fetch = async (url, options) => {
 
 const analysis = await requestWorkshopAnalysis({ apiKey: 'sk-test', payload: aiPayload });
 assert.equal(analysis.result, '# Executive Summary\n- 테스트 리포트');
+assert.equal(analysis.title, '종합 리포트');
+assert.equal(analysis.analysisType, 'comprehensive');
 assert.equal(analysis.inputSummary.surveyId, '2026-2Q-1');
 assert.equal(analysis.generatedBy.mode, 'browser');
 globalThis.fetch = originalFetch;

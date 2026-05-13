@@ -20,6 +20,7 @@ export default function QuestionRenderer({ question, value, onChange, validation
   const renderChoices = (multi = false) => {
     const current = multi ? (Array.isArray(value) ? value : []) : value;
     const max = question.maxSelections;
+    const exclusiveOptions = question.exclusiveOptions || [];
 
     return (
       <div className={styles.options}>
@@ -37,9 +38,14 @@ export default function QuestionRenderer({ question, value, onChange, validation
                   onChange(option);
                   return;
                 }
-                const next = selected
-                  ? current.filter((item) => item !== option)
-                  : [...current, option].slice(0, max || undefined);
+                let next;
+                if (selected) {
+                  next = current.filter((item) => item !== option);
+                } else if (exclusiveOptions.includes(option)) {
+                  next = [option];
+                } else {
+                  next = [...current.filter((item) => !exclusiveOptions.includes(item)), option].slice(0, max || undefined);
+                }
                 onChange(next);
               }}
             >
@@ -63,18 +69,20 @@ export default function QuestionRenderer({ question, value, onChange, validation
 
       {question.type === 'scale5na' ? (
         <div className={styles.scaleGrid}>
-          {scaleOptions.map((option) => (
-            <OptionButton
-              key={option.value}
-              selected={value === option.value}
-              onClick={() => onChange(option.value)}
-            >
-              <span className={option.isNeutral ? styles.neutralLabel : styles.scoreLabel}>
-                {option.isNeutral ? 'N/A' : option.value}
-              </span>
-              <span>{option.label}</span>
-            </OptionButton>
-          ))}
+          {scaleOptions
+            .filter((option) => question.allowNA || option.value !== 'NA')
+            .map((option) => (
+              <OptionButton
+                key={option.value}
+                selected={value === option.value}
+                onClick={() => onChange(option.value)}
+              >
+                <span className={option.isNeutral ? styles.neutralLabel : styles.scoreLabel}>
+                  {option.isNeutral ? 'N/A' : option.value}
+                </span>
+                <span>{option.label}</span>
+              </OptionButton>
+            ))}
         </div>
       ) : null}
 

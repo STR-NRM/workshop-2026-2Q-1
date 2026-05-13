@@ -261,7 +261,7 @@
 .analysis {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 26px;
 }
 
 .analysisMeta {
@@ -277,6 +277,48 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 12px;
+}
+
+.progressNote {
+  padding: 12px;
+  color: var(--text);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.reportBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.reportBlock:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.reportBlockHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reportBlockHeader h3 {
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1.35;
+}
+
+.reportBlockHeader p {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .reportBody {

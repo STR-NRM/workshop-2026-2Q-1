@@ -266,6 +266,51 @@ function MarkdownReport({ text }) {
   return <article className={styles.reportBody}>{nodes}</article>;
 }
 
+function filterPayloadQuestions(payload, predicate, options = {}) {
+  const questionStats = payload.questionStats.filter(predicate);
+  const questionIds = new Set(questionStats.map((stat) => stat.id));
+  const filterSignal = (items = []) => items.filter((item) => questionIds.has(item.id));
+
+  return {
+    ...payload,
+    axisStats: options.includeAxisStats === false ? [] : payload.axisStats,
+    questionStats,
+    prioritySignals: {
+      lowAverage: filterSignal(payload.prioritySignals?.lowAverage),
+      highVariance: filterSignal(payload.prioritySignals?.highVariance),
+      highNa: filterSignal(payload.prioritySignals?.highNa),
+    },
+  };
+}
+
+function buildAnalysisBundle(reports) {
+  const analyzedAt = Date.now();
+  return {
+    result: reports.comprehensive.result,
+    model: reports.comprehensive.model,
+    reasoningEffort: reports.comprehensive.reasoningEffort,
+    analyzedAt,
+    reportVersion: '2026-05-13-analysis-suite-v1',
+    inputSummary: reports.comprehensive.inputSummary,
+    reports,
+  };
+}
+
+function reportItems(analysis) {
+  if (!analysis) return [];
+  if (analysis.reports) {
+    return [
+      ['comprehensive', '1. 종합 리포트', '설문 전체를 함께 보고 워크샵 의제와 4주 실행 실험을 도출합니다.', analysis.reports.comprehensive],
+      ['closedEnded', '2. 비주관식 문항 리포트', '리커트, 단일선택, 복수선택 결과만으로 정량 신호를 해석합니다.', analysis.reports.closedEnded],
+      ['textByQuestion', '3. 주관식 문항별 리포트', '서술형 응답을 문항별로 나누어 반복 테마와 토론 질문을 정리합니다.', analysis.reports.textByQuestion],
+    ].filter(([, , , report]) => report?.result);
+  }
+  if (analysis.result) {
+    return [['legacy', '종합 리포트', '기존 형식으로 저장된 AI 리포트입니다.', analysis]];
+  }
+  return [];
+}
+
 export default function Result() {
   const [dataError, setDataError] = useState('');
   const [analysisError, setAnalysisError] = useState('');
@@ -276,6 +321,7 @@ export default function Result() {
   const [analysis, setAnalysis] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [openAiKey, setOpenAiKey] = useState('');
+  const [analysisProgress, setAnalysisProgress] = useState('');
 
   const dashboard = useMemo(
     () => buildDashboardStats(allResponses, respondents),
@@ -307,13 +353,45 @@ export default function Result() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (!analysisRunning) return undefined;
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [analysisRunning]);
+
   const runAnalysis = async () => {
     setActiveTab('analysis');
     setAnalysisError('');
     setAnalysisRunning(true);
+    setAnalysisProgress('1/3 종합 리포트를 생성하는 중입니다.');
     try {
       const payload = buildAiAnalysisPayload(dashboard, allResponses, respondents);
-      const generated = await requestWorkshopAnalysis({ apiKey: openAiKey, payload });
+      const comprehensive = await requestWorkshopAnalysis({
+        apiKey: openAiKey,
+        payload,
+        analysisType: 'comprehensive',
+      });
+
+      setAnalysisProgress('2/3 비주관식 문항 리포트를 생성하는 중입니다.');
+      const closedEnded = await requestWorkshopAnalysis({
+        apiKey: openAiKey,
+        payload: filterPayloadQuestions(payload, (stat) => stat.type !== 'longText'),
+        analysisType: 'closedEnded',
+      });
+
+      setAnalysisProgress('3/3 주관식 문항별 리포트를 생성하는 중입니다.');
+      const textByQuestion = await requestWorkshopAnalysis({
+        apiKey: openAiKey,
+        payload: filterPayloadQuestions(payload, (stat) => stat.type === 'longText', { includeAxisStats: false }),
+        analysisType: 'textByQuestion',
+      });
+
+      setAnalysisProgress('AI 리포트를 Firebase에 저장하는 중입니다.');
+      const generated = buildAnalysisBundle({ comprehensive, closedEnded, textByQuestion });
       const saved = await analysisService.saveComprehensiveAnalysis(generated);
       setAnalysis(saved);
     } catch (err) {
@@ -321,6 +399,7 @@ export default function Result() {
       setAnalysisError(err.message || 'AI 분석 생성에 실패했습니다.');
     } finally {
       setAnalysisRunning(false);
+      setAnalysisProgress('');
     }
   };
 
@@ -348,6 +427,7 @@ export default function Result() {
     ],
   };
   const canRunAnalysis = !loading && dashboard.respondentCount > 0;
+  const reports = reportItems(analysis);
 
   return (
     <AppShell wide>
@@ -367,7 +447,7 @@ export default function Result() {
       <div className={styles.actions}>
         <Button variant="secondary" onClick={loadData} loading={loading}>새로고침</Button>
         <Button onClick={runAnalysis} loading={analysisRunning} disabled={!canRunAnalysis}>
-          AI 분석 생성/갱신
+          AI 분석 3종 생성/갱신
         </Button>
         <Button variant="ghost" onClick={exportCsv}>CSV export</Button>
         <Button variant="ghost" onClick={exportJson}>JSON export</Button>
@@ -521,7 +601,7 @@ export default function Result() {
             <SectionTitle
               eyebrow="AI Report"
               title="전문가 검토형 AI 분석 리포트"
-              description="현재 응답 집계 데이터를 OpenAI로 분석합니다. API key는 이 화면의 분석 요청에만 사용하고 Firebase나 GitHub에는 저장하지 않습니다."
+              description="종합, 비주관식, 주관식 문항별 리포트를 순차 생성합니다. 생성 중에는 이 탭을 닫거나 새로고침하지 마세요."
             />
             <div className={styles.reportControls}>
               <label htmlFor="openai-key">OpenAI API key</label>
@@ -535,11 +615,12 @@ export default function Result() {
                 spellCheck="false"
               />
               <Button onClick={runAnalysis} loading={analysisRunning} disabled={!canRunAnalysis}>
-                AI 분석 생성/갱신
+                AI 분석 3종 생성/갱신
               </Button>
             </div>
           </div>
           {analysisError ? <p className={styles.error}>{analysisError}</p> : null}
+          {analysisProgress ? <p className={styles.progressNote}>{analysisProgress}</p> : null}
           {analysis ? (
             <div className={styles.analysis}>
               <div className={styles.analysisMeta}>
@@ -548,12 +629,24 @@ export default function Result() {
                 <span>generated: {formatTime(analysis.analyzedAt)}</span>
                 <span>respondents: {analysis.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
               </div>
-              <MarkdownReport text={analysis.result || ''} />
+              {reports.map(([id, title, description, report]) => (
+                <section key={id} className={styles.reportBlock}>
+                  <div className={styles.reportBlockHeader}>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                    <div className={styles.analysisMeta}>
+                      <span>type: {report.analysisType || id}</span>
+                      <span>generated: {formatTime(report.analyzedAt || analysis.analyzedAt)}</span>
+                    </div>
+                  </div>
+                  <MarkdownReport text={report.result || ''} />
+                </section>
+              ))}
             </div>
           ) : (
             <div className={styles.emptyState}>
               <strong>아직 생성된 AI 리포트가 없습니다.</strong>
-              <span>위 버튼을 누르면 현재 응답 집계 기준으로 워크샵용 구조화 리포트를 생성합니다.</span>
+              <span>위 버튼을 누르면 현재 응답 집계 기준으로 종합, 비주관식, 주관식 문항별 리포트를 생성합니다.</span>
             </div>
           )}
         </Panel>
