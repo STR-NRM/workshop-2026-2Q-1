@@ -282,6 +282,25 @@ export const analysisService = {
     await set(ref(database, `${namespace}/analysis/comprehensive`), analysis);
     return analysis;
   },
+
+  async getComparisonAnalysis() {
+    if (usingLocalStore) return readLocalStore().analysis.comparison || null;
+    const snapshot = await get(ref(database, `${namespace}/analysis/comparison`));
+    return snapshot.exists() ? snapshot.val() : null;
+  },
+
+  async saveComparisonAnalysis(analysis) {
+    if (usingLocalStore) {
+      const store = readLocalStore();
+      store.analysis.comparison = analysis;
+      writeLocalStore(store);
+      return analysis;
+    }
+
+    await ensureAnonymousAuth();
+    await set(ref(database, `${namespace}/analysis/comparison`), analysis);
+    return analysis;
+  },
 };
 
 export const localDebugService = {

@@ -6,6 +6,7 @@ import { AppShell, Panel } from './components/common/Layout';
 const Survey = lazy(() => import('./pages/Survey'));
 const Complete = lazy(() => import('./pages/Complete'));
 const Result = lazy(() => import('./pages/Result'));
+const Comparison = lazy(() => import('./pages/Comparison'));
 
 function LazyPage({ children }) {
   return (
@@ -36,7 +37,14 @@ export default function App() {
             </LazyPage>
           }
         />
-        <Route path="/result" element={<Navigate to="/admin" replace />} />
+        <Route
+          path="/comparison"
+          element={
+            <LazyPage>
+              <Comparison />
+            </LazyPage>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

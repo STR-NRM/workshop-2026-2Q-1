@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   BarElement,
   CategoryScale,
@@ -1003,6 +1004,8 @@ export default function Result() {
       <div className={styles.toolbar}>
         <Button variant="secondary" onClick={loadData} loading={loading}>새로고침</Button>
         <div className={styles.exportLinks} aria-label="결과 데이터 내보내기">
+          <Link to="/comparison">작년 비교</Link>
+          <span aria-hidden="true">·</span>
           <button type="button" onClick={exportCsv}>Excel CSV</button>
           <span aria-hidden="true">·</span>
           <button type="button" onClick={exportJson}>JSON</button>

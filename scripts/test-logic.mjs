@@ -17,6 +17,8 @@ import {
   getScaleStats,
   normalizeResponseValue,
 } from '../src/utils/analytics.js';
+import { buildComparisonAiPayload, buildComparisonDataset } from '../src/utils/comparisonAnalysis.js';
+import { requestComparisonAnalysis } from '../src/utils/comparisonOpenaiAnalysis.js';
 import { requestWorkshopAnalysis } from '../src/utils/openaiAnalysis.js';
 
 assert.equal(hasExternalModule({ META_EXTERNAL: ['특별히 없음'] }), false);
@@ -107,6 +109,9 @@ const dashboard = buildDashboardStats(
     user1: {
       A01: { value: 5 },
       A02: { value: 2 },
+      PS01: { value: 4 },
+      PS02: { value: 5 },
+      PS03: { value: 4 },
       META_ROLE: { value: 'AI 엔지니어링' },
       CHOICE01: { value: '기타' },
       CHOICE01_OTHER: { value: '선택지로는 설명하기 어려운 데이터 확인 흐름이 막힙니다.' },
@@ -115,6 +120,9 @@ const dashboard = buildDashboardStats(
     user2: {
       A01: { value: 3 },
       A02: { value: 'NA' },
+      PS01: { value: 3 },
+      PS02: { value: 4 },
+      PS03: { value: 'NA' },
       META_ROLE: { value: '웹 엔지니어링(FE/BE)' },
       CHOICE01: { value: '의사결정 속도와 권한' },
       TEXT01: { value: '다른 유지 사례입니다.' },
@@ -234,6 +242,58 @@ const roleMessagesAnalysis = await requestWorkshopAnalysis({ apiKey: 'sk-test', 
 assert.equal(roleMessagesAnalysis.result, '# 직무별 메시지\n\n> **PM/제품 담당 분들께:** 메시지입니다.');
 assert.equal(roleMessagesAnalysis.title, '직무별 메시지');
 assert.equal(roleMessagesAnalysis.analysisType, 'roleMessages');
+
+const comparisonDataset = buildComparisonDataset(dashboard);
+assert.equal(comparisonDataset.legacySurvey.validResponseCount, 9);
+assert.equal(comparisonDataset.rows.length, 16);
+assert.ok(comparisonDataset.rows.some((row) => row.id === 'decision_rights' && row.numericComparisonAllowed === false));
+assert.ok(comparisonDataset.rows.some((row) => row.id === 'psychological_safety' && row.averageDelta !== null));
+const comparisonPayload = buildComparisonAiPayload(comparisonDataset);
+assert.equal(comparisonPayload.survey.comparisonId, '2025-4Q-vs-2026-2Q');
+assert.equal(comparisonPayload.comparisonRows.length, comparisonDataset.rows.length);
+
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, 'https://api.openai.com/v1/responses');
+  const body = JSON.parse(options.body);
+  assert.match(body.input, /비교 편지/);
+  assert.match(body.input, /2025 하반기와 2026 상반기/);
+  assert.match(body.input, /숫자, 평균, 응답 수, 문항 ID, 매핑 등급/);
+  assert.match(body.input, /Executive Summary를 쓰지 마세요/);
+  assert.doesNotMatch(body.input, /첫 섹션에는 반드시/);
+  return {
+    ok: true,
+    json: async () => ({ output_text: '# Executive Summary\n**한 문장 결론:** "비교 편지입니다."\n비교 편지 본문입니다.' }),
+  };
+};
+
+const comparisonLetter = await requestComparisonAnalysis({
+  apiKey: 'sk-test',
+  payload: comparisonPayload,
+  analysisType: 'comparisonLetter',
+});
+assert.equal(comparisonLetter.result, '# 비교 편지\n\n비교 편지 본문입니다.');
+assert.equal(comparisonLetter.title, '비교 편지');
+
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, 'https://api.openai.com/v1/responses');
+  const body = JSON.parse(options.body);
+  assert.match(body.input, /비교 종합 리포트/);
+  assert.match(body.input, /반드시 "# Executive Summary"로 시작/);
+  assert.match(body.input, /M2 이하이거나 numericComparisonAllowed=false/);
+  assert.match(body.input, /문항 변경, 역할 분기, 작은 표본/);
+  return {
+    ok: true,
+    json: async () => ({ output_text: '# Executive Summary\n**한 문장 결론:** "비교 테스트입니다."' }),
+  };
+};
+
+const comparisonOverview = await requestComparisonAnalysis({
+  apiKey: 'sk-test',
+  payload: comparisonPayload,
+  analysisType: 'comparisonOverview',
+});
+assert.equal(comparisonOverview.result, '# Executive Summary\n**한 문장 결론:** "비교 테스트입니다."');
+assert.equal(comparisonOverview.inputSummary.mappingCount, 16);
 globalThis.fetch = originalFetch;
 
 console.log('Logic tests OK');
