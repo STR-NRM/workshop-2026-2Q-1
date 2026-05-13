@@ -62,7 +62,7 @@ export default function QuestionRenderer({ question, value, onChange, validation
     <article className={styles.card}>
       <div className={styles.kicker}>
         <span>{question.section}</span>
-        <strong>{question.id}</strong>
+        <strong>{question.title}</strong>
       </div>
       <h2 className={styles.title}>{question.question}</h2>
       {question.helpText ? <p className={styles.help}>{question.helpText}</p> : null}
@@ -78,7 +78,7 @@ export default function QuestionRenderer({ question, value, onChange, validation
                 onClick={() => onChange(option.value)}
               >
                 <span className={option.isNeutral ? styles.neutralLabel : styles.scoreLabel}>
-                  {option.isNeutral ? 'N/A' : option.value}
+                  {option.isNeutral ? option.shortLabel : option.value}
                 </span>
                 <span>{option.label}</span>
               </OptionButton>

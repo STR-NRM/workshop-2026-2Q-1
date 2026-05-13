@@ -32,7 +32,7 @@ questions.forEach((question) => {
 const base = getVisibleQuestions({}).map((question) => question.id);
 const pm = getVisibleQuestions({ META_ROLE: '제품/PM/프롬프트' }).map((question) => question.id);
 const ai = getVisibleQuestions({ META_ROLE: 'AI 엔지니어링' }).map((question) => question.id);
-const web = getVisibleQuestions({ META_ROLE: '웹 엔지니어링(FE/BE)' }).map((question) => question.id);
+const web = getVisibleQuestions({ META_ROLE: '웹 개발(프론트/백엔드)' }).map((question) => question.id);
 const external = getVisibleQuestions({
   META_ROLE: 'AI 엔지니어링',
   META_EXTERNAL: ['개발운영/인프라'],

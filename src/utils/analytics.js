@@ -1,8 +1,54 @@
 import { QUESTION_VERSION, SURVEY_ID, axisMap, questions, surveyInfo } from '../data/questions.js';
 
+const legacyChoiceLabels = {
+  META_ROLE: {
+    '웹 엔지니어링(FE/BE)': '웹 개발(프론트/백엔드)',
+  },
+  META_WORKSTREAM: {
+    '공통 검색/AI 플랫폼/인프라성 작업': '공통 검색, AI 기반 작업, 인프라 관련 작업',
+  },
+  CHOICE01: {
+    '제품 우선순위/전략 정렬': '제품 우선순위와 전략 정리',
+    '고객/사용자 피드백 수집과 해석': '고객/사용자 의견 수집과 해석',
+    '의사결정 속도와 권한': '결정 속도와 권한',
+    '팀 내부 제품/개발 협업(PM/프롬프트/AI/BE/FE)': '팀 내부 제품/개발 협업(PM/프롬프트/AI/백엔드/프론트엔드)',
+    '제품별 실행 방식과 성숙도 관리': '제품별 운영 방식 관리',
+    '인력/시간/동시에 진행 중인 일 과다': '인력/시간 부족 또는 동시에 진행 중인 일 과다',
+    '온보딩/문서화 부족': '새 구성원 적응/문서화 부족',
+  },
+  CHOICE02: {
+    '제품별 우선순위와 책임 역할 정리': '제품별 우선순위와 끝까지 챙기는 역할 정리',
+    '고객/사용자 의견이 제품 결정으로 이어지는 흐름 정리': '고객/사용자 의견이 제품 결정으로 이어지는 과정 정리',
+    '의사결정자와 결정 방식 정리': '최종 결정하는 사람과 결정 방식 정리',
+    '제품별 실행/공유/제품화 기준 정리': '제품별 실행/공유/정식 서비스 기준 정리',
+    '온보딩/문서화 정리': '새 구성원 적응/문서화 정리',
+  },
+  CHOICE03: {
+    'CBT/실험 단계 제품과 운영 제품의 기준 차이가 모호하다': 'CBT(사전 테스트)/실험 단계 제품과 운영 제품의 기준 차이가 모호하다',
+  },
+  CHOICE05: {
+    '운영 제품과 CBT/실험 제품의 기준 차이 불명확': '운영 제품과 CBT(사전 테스트)/실험 제품의 기준 차이 불명확',
+    '빠른 구현 방식의 리스크 관리 부족': '빠른 구현 방식의 위험 관리 부족',
+    '제품화 기준 불명확': '정식 서비스로 넘길 기준 불명확',
+    '제품 간 학습 공유 부족': '제품 간 배운 점 공유 부족',
+  },
+  CHOICE06: {
+    '고객/시장/내부 피드백': '고객/시장/관련 팀 의견',
+    '엔지니어링/운영': '개발/운영',
+    'CBT/신규 실험': 'CBT(사전 테스트)/신규 실험',
+  },
+};
+
 export function responseValue(response) {
   if (!response) return undefined;
   return Object.prototype.hasOwnProperty.call(response, 'value') ? response.value : response;
+}
+
+export function normalizeResponseValue(questionId, value) {
+  const labels = legacyChoiceLabels[questionId];
+  if (!labels) return value;
+  if (Array.isArray(value)) return value.map((item) => labels[item] || item);
+  return labels[value] || value;
 }
 
 export function flattenResponses(allResponses = {}) {
@@ -10,7 +56,7 @@ export function flattenResponses(allResponses = {}) {
     Object.entries(responses || {}).map(([questionId, response]) => ({
       uid,
       questionId,
-      value: responseValue(response),
+      value: normalizeResponseValue(questionId, responseValue(response)),
       answeredAt: response?.answeredAt,
       type: response?.type,
     })),
@@ -24,7 +70,7 @@ function variance(numbers, average) {
 
 export function getQuestionResponses(allResponses, questionId) {
   return Object.values(allResponses || {})
-    .map((responses) => responseValue(responses?.[questionId]))
+    .map((responses) => normalizeResponseValue(questionId, responseValue(responses?.[questionId])))
     .filter((value) => value !== undefined && value !== null && value !== '');
 }
 

@@ -78,26 +78,26 @@ const analysisConfigs = {
     tabLabel: 'AI 종합',
     eyebrow: 'AI 종합 분석',
     title: '종합 AI 리포트',
-    description: '정량과 주관식을 함께 보고 워크샵 의제, 핵심 병목, 4주 실행 실험을 도출합니다.',
+    description: '점수/선택 결과와 서술형 응답을 함께 보고 워크샵에서 논의할 주제와 4주 동안 해볼 작은 개선을 정리합니다.',
     buttonLabel: '종합 리포트 생성/갱신',
   },
   closedEnded: {
     type: 'closedEnded',
     tabId: 'ai-closed',
-    tabLabel: 'AI 비주관식',
-    eyebrow: 'AI 선택/척도 분석',
-    title: '비주관식 문항 AI 리포트',
-    description: '리커트 척도, 단일선택, 복수선택 결과만으로 정량 신호와 선택 분포를 해석합니다.',
-    buttonLabel: '비주관식 리포트 생성/갱신',
+    tabLabel: 'AI 선택형',
+    eyebrow: 'AI 선택형/척도 분석',
+    title: '선택형·척도형 문항 AI 리포트',
+    description: '1~5점 척도, 단일선택, 복수선택 결과만으로 숫자로 보이는 신호와 선택 분포를 해석합니다.',
+    buttonLabel: '선택형 리포트 생성/갱신',
   },
   textByQuestion: {
     type: 'textByQuestion',
     tabId: 'ai-text',
-    tabLabel: 'AI 주관식',
+    tabLabel: 'AI 서술형',
     eyebrow: 'AI 서술형 분석',
-    title: '주관식 문항별 AI 리포트',
+    title: '서술형 문항별 AI 리포트',
     description: '서술형 응답을 문항별로 나누어 반복 테마, 소수 의견, 토론 질문을 정리합니다.',
-    buttonLabel: '주관식 리포트 생성/갱신',
+    buttonLabel: '서술형 리포트 생성/갱신',
   },
 };
 
@@ -130,9 +130,9 @@ function scaleInterpretation(stat) {
   const average = stat.scale.average;
   const variance = stat.scale.variance;
   const naRatio = stat.scale.naRatio;
-  if (average !== null && average < 3) return '평균이 3점 미만입니다. 워크샵에서 원인 구조를 먼저 확인할 후보입니다.';
-  if (variance !== null && variance >= 1.2) return '응답 차이가 큽니다. 역할, 제품, 협업 접점에 따라 경험이 다른지 확인해야 합니다.';
-  if (naRatio !== null && naRatio >= 0.3) return '해당 없음/판단 어려움 비율이 높습니다. 정보 접근성 또는 업무 접점 차이를 확인해야 합니다.';
+  if (average !== null && average < 3) return '평균이 3점 미만입니다. 워크샵에서 원인과 구조를 먼저 확인할 후보입니다.';
+  if (variance !== null && variance >= 1.2) return '응답 차이가 큽니다. 역할, 제품, 함께 일하는 팀에 따라 경험이 다른지 확인해야 합니다.';
+  if (naRatio !== null && naRatio >= 0.3) return '해당 없음/판단 어려움 비율이 높습니다. 필요한 정보를 볼 수 있는 정도나 실제 업무 연결 정도를 확인해야 합니다.';
   if (average !== null && average >= 4) return '상대적으로 안정적인 신호입니다. 유지할 운영 방식으로 남길 수 있는지 확인하세요.';
   return '뚜렷한 경고 신호보다는 토론에서 맥락을 보완할 문항입니다.';
 }
@@ -150,7 +150,7 @@ function buildOverview(dashboard) {
   const splitQuestion = dashboard.highVariance[0] || null;
 
   const headline = dashboard.respondentCount
-    ? `${dashboard.respondentCount}명 응답 기준으로 가장 먼저 볼 축은 ${lowestAxis?.axis || '아직 없음'}입니다.`
+    ? `${dashboard.respondentCount}명 응답 기준으로 가장 먼저 볼 영역은 ${lowestAxis?.axis || '아직 없음'}입니다.`
     : '아직 응답 데이터가 없어 결과를 해석할 수 없습니다.';
 
   return {
@@ -159,47 +159,47 @@ function buildOverview(dashboard) {
       {
         label: '응답 상태',
         value: `${dashboard.completedCount}/${dashboard.respondentCount} 완료`,
-        detail: `완료율 ${completedRatio}%. 표본 수가 적을수록 수치는 방향성 신호로만 봅니다.`,
+        detail: `완료율 ${completedRatio}%. 응답자 수가 적을수록 수치는 방향성 신호로만 봅니다.`,
       },
       {
-        label: '가장 낮은 운영 축',
+        label: '점수가 가장 낮은 영역',
         value: lowestAxis ? `${lowestAxis.axis} ${formatAverage(lowestAxis.average)}` : '-',
-        detail: '축 평균이 낮을수록 워크샵에서 구조를 먼저 확인할 후보입니다.',
+        detail: '영역 평균이 낮을수록 워크샵에서 구조를 먼저 확인할 후보입니다.',
       },
       {
-        label: '상대적으로 강한 축',
+        label: '상대적으로 강한 영역',
         value: highestAxis ? `${highestAxis.axis} ${formatAverage(highestAxis.average)}` : '-',
-        detail: '강한 축은 유지할 방식과 재사용 가능한 운영 습관을 찾는 데 사용합니다.',
+        detail: '강한 영역은 유지할 방식과 재사용 가능한 운영 습관을 찾는 데 사용합니다.',
       },
       {
-        label: '가장 많이 선택된 병목',
+        label: '가장 많이 선택된 막힘',
         value: bottleneck ? bottleneck.label : '-',
         detail: bottleneck ? `${bottleneck.count}/${bottleneck.total} 선택, ${bottleneck.percent}%` : '선택형 응답이 아직 없습니다.',
       },
       {
         label: '4주 개선 우선 후보',
         value: improvement ? improvement.label : '-',
-        detail: improvement ? `${improvement.count}/${improvement.total} 선택. 바로 실험 가능한 크기로 쪼개야 합니다.` : '선택형 응답이 아직 없습니다.',
+        detail: improvement ? `${improvement.count}/${improvement.total} 선택. 바로 시도할 수 있는 작은 크기로 쪼개야 합니다.` : '선택형 응답이 아직 없습니다.',
       },
       {
         label: '주요 제품/업무 영역',
         value: workArea ? workArea.label : '-',
-        detail: workArea ? `${workArea.count}회 선택. 제품이나 업무 영역별 응답 쏠림이 있는지 해석에 반영합니다.` : '선택형 응답이 아직 없습니다.',
+        detail: workArea ? `${workArea.count}회 선택. 제품이나 업무 영역별 응답 쏠림이 있는지 함께 봅니다.` : '선택형 응답이 아직 없습니다.',
       },
       {
-        label: '분과 토론 관심',
+        label: '토론 주제 관심',
         value: discussion ? discussion.label : '-',
-        detail: discussion ? `${discussion.percent}% 비중의 선호입니다. 실제 배정은 정량/주관식 신호와 함께 봅니다.` : '분과 선호 응답이 아직 없습니다.',
+        detail: discussion ? `${discussion.percent}% 비중의 선호입니다. 실제 토론 주제는 점수/선택 결과와 서술형 응답을 함께 봅니다.` : '토론 주제 선호 응답이 아직 없습니다.',
       },
       {
-        label: '가장 약한 문항',
+        label: '점수가 가장 낮은 문항',
         value: lowestQuestion ? `${lowestQuestion.question.id}. ${lowestQuestion.question.title}` : '-',
-        detail: lowestQuestion ? `평균 ${formatAverage(lowestQuestion.scale.average)}. 개인 문제가 아니라 구조 확인 후보입니다.` : '리커트 응답이 아직 없습니다.',
+        detail: lowestQuestion ? `평균 ${formatAverage(lowestQuestion.scale.average)}. 개인 문제가 아니라 구조 확인 후보입니다.` : '척도 응답이 아직 없습니다.',
       },
       {
-        label: '이견이 큰 문항',
+        label: '응답 차이가 큰 문항',
         value: splitQuestion ? `${splitQuestion.question.id}. ${splitQuestion.question.title}` : '-',
-        detail: splitQuestion ? `분산 ${formatAverage(splitQuestion.scale.variance)}. 경험 차이 또는 기준 차이를 확인하세요.` : '리커트 응답이 아직 없습니다.',
+        detail: splitQuestion ? `응답 차이 ${formatAverage(splitQuestion.scale.variance)}. 경험 차이 또는 기준 차이를 확인하세요.` : '척도 응답이 아직 없습니다.',
       },
     ],
   };
@@ -305,7 +305,7 @@ function QuestionStatRow({ stat }) {
             <span>평균 {formatAverage(stat.scale.average)}</span>
             <span>1~2점 {toPercent(stat.scale.lowRatio)}</span>
             <span>4~5점 {toPercent(stat.scale.highRatio)}</span>
-            {stat.scale.naCount ? <span>N/A {toPercent(stat.scale.naRatio)}</span> : null}
+            {stat.scale.naCount ? <span>판단 어려움 {toPercent(stat.scale.naRatio)}</span> : null}
           </div>
         </div>
       </div>
@@ -320,7 +320,7 @@ function QuestionStatRow({ stat }) {
             {question.id}. {question.title}
           </strong>
           <span>{question.question}</span>
-          <small>선택 비중이 높은 항목은 공통 인식 후보이고, 선택이 갈리면 경험 차이나 기준 차이를 토론해야 합니다.</small>
+          <small>선택 비중이 높은 항목은 공통 인식 후보이고, 선택이 갈리면 경험 차이나 기준 차이를 확인해야 합니다.</small>
         </div>
         <div className={styles.questionViz}>
           <ChoiceBars stat={stat} />
@@ -659,7 +659,7 @@ export default function Result() {
     if (!canRunAnalysis) return;
 
     setAnalysisRunningTypes(allAnalysisTypes);
-    setAnalysisProgress('AI 리포트 3개를 동시에 생성하는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.');
+      setAnalysisProgress('AI 리포트 3개를 동시에 만드는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.');
     try {
       const payload = buildAiAnalysisPayload(dashboard, allResponses, respondents);
       const generatedReports = await Promise.all(
@@ -679,7 +679,7 @@ export default function Result() {
       setAnalysis(saved);
     } catch (err) {
       console.error(err);
-      setAnalysisError(err.message || 'AI 분석 생성에 실패했습니다.');
+      setAnalysisError(err.message || 'AI 리포트를 만들지 못했습니다.');
     } finally {
       setAnalysisRunningTypes([]);
       setAnalysisProgress('');
@@ -720,7 +720,7 @@ export default function Result() {
       <PageHeader
         eyebrow={surveyInfo.organization}
         title="워크샵 설문 결과 리포트"
-        description="개인 평가가 아니라 운영 병목, 이견, 4주 실행 실험 후보를 찾기 위한 결과 화면입니다."
+        description="개인 평가가 아니라 일이 막히는 지점, 의견 차이, 4주 동안 해볼 작은 개선을 찾기 위한 결과 화면입니다."
         meta={
           <>
             <span>{loading ? '결과 불러오는 중' : '결과 불러옴'}</span>
@@ -737,16 +737,16 @@ export default function Result() {
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
 
       <div className={styles.metrics}>
-        <Metric label="응답 세션" value={`${dashboard.respondentCount}명`} hint="응답 시작 기준" />
+        <Metric label="응답 시작" value={`${dashboard.respondentCount}명`} hint="설문을 시작한 인원" />
         <Metric label="완료" value={`${dashboard.completedCount}명`} hint="최종 제출 기준" />
-        <Metric label="문항 정의" value={`${questions.length}개`} hint="역할/조건부 포함" />
-        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="버튼 하나로 3종 동시 생성" />
+        <Metric label="전체 문항" value={`${questions.length}개`} hint="직무별/추가 문항 포함" />
+        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="한 번에 3개 리포트 생성" />
       </div>
 
       <div className={styles.tabs}>
         {[
           ['overview', '요약'],
-          ['signals', '우선 신호'],
+          ['signals', '먼저 볼 신호'],
           ['questions', '문항별'],
           ['text', '서술형'],
           [analysisConfigs.comprehensive.tabId, analysisConfigs.comprehensive.tabLabel],
@@ -771,7 +771,7 @@ export default function Result() {
               <span>한눈에 보는 현재 신호</span>
               <strong>{overview.headline}</strong>
               <p>
-                이 요약은 의사결정을 대신하지 않습니다. 워크샵에서 어떤 질문을 먼저 확인할지 좁히기 위한 운영 신호입니다.
+                이 요약은 결정을 대신하지 않습니다. 워크샵에서 어떤 질문을 먼저 확인할지 좁히기 위한 신호입니다.
               </p>
             </div>
             <div className={styles.overviewCards}>
@@ -783,8 +783,8 @@ export default function Result() {
             <Panel className={styles.panel}>
               <SectionTitle
                 eyebrow="결과 요약"
-                title="축별 평균"
-                description="5점 척도 문항을 운영 축별로 묶은 평균입니다. 응답 수가 적을 때는 방향성 신호로만 해석해야 합니다."
+                title="영역별 평균"
+                description="5점 척도 문항을 일하는 방식의 영역별로 묶은 평균입니다. 응답 수가 적을 때는 방향성 신호로만 해석해야 합니다."
               />
               <div className={styles.chartWrap}>
                 <Bar
@@ -819,9 +819,9 @@ export default function Result() {
               />
               <div className={styles.noteList}>
                 <span><strong>낮은 평균</strong> 구조와 기준을 먼저 확인할 후보입니다.</span>
-                <span><strong>큰 이견</strong> 제품, 역할, 협업 접점에 따라 경험이 갈릴 가능성이 있습니다.</span>
-                <span><strong>N/A</strong> 모든 문항이 아니라 실제 접점 차이가 큰 문항에만 남겼습니다.</span>
-                <span><strong>선택형 상위 항목</strong> 다수가 체감하는 병목 후보이며, 서술형과 함께 확인해야 합니다.</span>
+                <span><strong>큰 응답 차이</strong> 제품, 역할, 함께 일하는 팀에 따라 경험이 갈릴 가능성이 있습니다.</span>
+                <span><strong>판단 어려움</strong> 실제 업무 연결이나 정보 접근 차이가 있을 수 있습니다.</span>
+                <span><strong>선택형 상위 항목</strong> 다수가 체감하는 막힘 후보이며, 서술형과 함께 확인해야 합니다.</span>
               </div>
             </Panel>
           </div>
@@ -831,28 +831,28 @@ export default function Result() {
       {activeTab === 'signals' ? (
         <Panel className={styles.panel}>
           <SectionTitle
-            eyebrow="우선 신호"
+            eyebrow="먼저 볼 신호"
             title="우선 확인할 신호"
-            description="아래 신호는 결론이 아니라 워크샵에서 먼저 질문해야 할 후보입니다. 낮은 평균, 큰 이견, N/A는 각각 의미가 다릅니다."
+            description="아래 신호는 결론이 아니라 워크샵에서 먼저 질문해야 할 후보입니다. 낮은 평균, 큰 응답 차이, 판단 어려움은 각각 의미가 다릅니다."
           />
           <div className={styles.signalCards}>
             <SignalList
-              title="평균 낮은 문항"
+              title="점수가 낮은 문항"
               description="대체로 좋지 않게 체감된 영역입니다. 원인이 사람인지가 아니라 구조, 기준, 정보 흐름인지 확인합니다."
               items={dashboard.lowAverage}
               metric={(stat) => formatAverage(stat.scale.average)}
               explanation={(stat) => `낮은 점수 비율 ${toPercent(stat.scale.lowRatio)}`}
             />
             <SignalList
-              title="이견이 큰 문항"
-              description="응답자마다 체감이 갈린 영역입니다. 제품/역할/협업 접점별 경험 차이를 확인해야 합니다."
+              title="응답 차이가 큰 문항"
+              description="응답자마다 체감이 갈린 영역입니다. 제품, 역할, 함께 일하는 팀에 따라 경험이 다른지 확인해야 합니다."
               items={dashboard.highVariance}
               metric={(stat) => formatAverage(stat.scale.variance)}
               explanation={(stat) => `평균 ${formatAverage(stat.scale.average)}`}
             />
             <SignalList
-              title="N/A 높은 문항"
-              description="일부 구성원이 판단하기 어려운 영역입니다. 정보 접근성 또는 실제 업무 접점 차이일 수 있습니다."
+              title="판단하기 어렵다는 응답이 많은 문항"
+              description="일부 구성원이 판단하기 어려운 영역입니다. 필요한 정보를 볼 수 있는 정도나 실제 업무 연결 정도의 차이일 수 있습니다."
               items={dashboard.highNa}
               metric={(stat) => toPercent(stat.scale.naRatio)}
               explanation={(stat) => `응답 수 ${stat.scale.answeredCount}`}
@@ -866,7 +866,7 @@ export default function Result() {
           <SectionTitle
             eyebrow="문항별 결과"
             title="문항별 결과"
-            description="리커트 문항은 1~5점 분포와 평균을, 선택형 문항은 선택 비중 막대를 함께 봅니다. 낮은 평균과 큰 분산은 바로 결론이 아니라 토론 후보입니다."
+            description="1~5점 척도 문항은 점수 분포와 평균을, 선택형 문항은 선택 비중 막대를 함께 봅니다. 낮은 평균과 큰 응답 차이는 바로 결론이 아니라 토론 후보입니다."
           />
           <div className={styles.questionList}>
             {dashboard.questionStats
@@ -881,7 +881,7 @@ export default function Result() {
           <SectionTitle
             eyebrow="서술형 응답"
             title="서술형 응답"
-            description="개인 식별 가능 표현은 워크샵 공유 전에 반드시 제거해야 합니다."
+            description="누군지 알 수 있는 표현은 워크샵 공유 전에 반드시 제거해야 합니다."
           />
           <div className={styles.textList}>
             {dashboard.questionStats
@@ -927,7 +927,7 @@ export default function Result() {
                 {activeAnalysisConfig.buttonLabel}
               </Button>
               <small className={styles.controlHelp}>
-                어떤 AI 리포트 탭에서 누르더라도 3종 리포트가 동시에 생성되고 각 탭에 저장됩니다.
+                어떤 AI 리포트 탭에서 누르더라도 3개 리포트가 동시에 만들어지고 각 탭에 저장됩니다.
               </small>
             </div>
           </div>
@@ -963,7 +963,7 @@ export default function Result() {
           ) : (
             <div className={styles.emptyState}>
               <strong>아직 이 리포트는 생성되지 않았습니다.</strong>
-              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 3종 AI 리포트가 동시에 생성되고, 이 탭에는 해당 리포트가 표시됩니다.</span>
+              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 3개 AI 리포트가 동시에 만들어지고, 이 탭에는 해당 리포트가 표시됩니다.</span>
             </div>
           )}
         </Panel>

@@ -10,6 +10,7 @@ import {
   buildDashboardStats,
   getChoiceStats,
   getScaleStats,
+  normalizeResponseValue,
 } from '../src/utils/analytics.js';
 import { requestWorkshopAnalysis } from '../src/utils/openaiAnalysis.js';
 
@@ -21,9 +22,14 @@ assert.equal(questions.some((question) => question.options?.includes('응답하�
 assert.equal(questions.find((question) => question.id === 'META_WORKSTREAM').maxSelections, undefined);
 assert.equal(questions.find((question) => question.id === 'A01').allowNA, undefined);
 assert.equal(questions.find((question) => question.id === 'B01').allowNA, true);
+assert.equal(normalizeResponseValue('CHOICE02', '의사결정자와 결정 방식 정리'), '최종 결정하는 사람과 결정 방식 정리');
+assert.deepEqual(
+  normalizeResponseValue('META_WORKSTREAM', ['AI Agent', '공통 검색/AI 플랫폼/인프라성 작업']),
+  ['AI Agent', '공통 검색, AI 기반 작업, 인프라 관련 작업'],
+);
 
 const visible = getVisibleQuestions({
-  META_ROLE: '웹 엔지니어링(FE/BE)',
+  META_ROLE: '웹 개발(프론트/백엔드)',
   META_EXTERNAL: ['서비스/디자인'],
   META_CBT: '예',
 });
@@ -78,6 +84,7 @@ const dashboard = buildDashboardStats(
 assert.equal(dashboard.respondentCount, 2);
 assert.equal(dashboard.completedCount, 1);
 assert.ok(dashboard.questionStats.find((stat) => stat.question.id === 'A01').scale.average === 4);
+assert.equal(dashboard.questionStats.find((stat) => stat.question.id === 'CHOICE01').choice['결정 속도와 권한'], 1);
 
 const aiPayload = {
   survey: { id: '2026-2Q-1', questionVersion: 'test' },

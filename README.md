@@ -53,7 +53,7 @@ npm run build
 
 ## Report Generation
 
-Report generation runs from the result page through three separate report tabs: `AI 종합`, `AI 비주관식`, and `AI 주관식`. The facilitator enters a report generation key in the selected report tab, the browser sends the relevant anonymized aggregate survey data to the configured analysis provider, and the generated report is saved to the app database.
+Report generation runs from the result page through three separate report tabs: `AI 종합`, `AI 선택형`, and `AI 서술형`. The facilitator enters a report generation key in the selected report tab, the browser sends the relevant anonymized aggregate survey data to the configured analysis provider, and the generated report is saved to the app database.
 
 This keeps GitHub Pages deployment simple and avoids server-side functions or paid runtime requirements. The report generation key is not committed, not added to GitHub Actions secrets, and not saved to the app database. It is used only for that browser request.
 
