@@ -26,7 +26,7 @@ export const roleOptions = [
   '웹 엔지니어링(FE/BE)',
 ];
 
-export const externalExcludedOptions = ['특별히 없음', '응답하지 않음'];
+export const externalExcludedOptions = ['특별히 없음'];
 
 const q = (item) => ({
   required: true,
@@ -61,7 +61,7 @@ export const questions = [
   q({
     id: 'META_ROLE',
     type: 'singleChoice',
-    section: '메타 문항',
+    section: '기본 정보',
     title: '주된 역할군',
     question: '현재 본인이 주로 수행하는 역할에 가장 가까운 것을 선택해주세요.',
     helpText:
@@ -71,10 +71,10 @@ export const questions = [
   q({
     id: 'META_WORKSTREAM',
     type: 'multiChoice',
-    section: '메타 문항',
-    title: '최근 6주 주요 워크스트림',
+    section: '기본 정보',
+    title: '최근 6주 주요 제품/업무 영역',
     question:
-      '최근 6주 동안 관여한 제품 또는 워크스트림을 모두 선택해주세요.',
+      '최근 6주 동안 관여한 제품 또는 업무 영역을 모두 선택해주세요.',
     helpText:
       '직접 담당, 부분 지원, 검토, 협업 요청 대응까지 포함해 실제로 시간을 쓴 항목을 선택해주세요. 이 문항은 제품별 책임 범위와 우선순위 병목을 해석하기 위한 보조 정보입니다.',
     options: [
@@ -90,7 +90,7 @@ export const questions = [
   q({
     id: 'META_TENURE',
     type: 'singleChoice',
-    section: '메타 문항',
+    section: '기본 정보',
     title: '현재 방식으로 일한 기간',
     question: 'AI 사업부 또는 현재 실무 스쿼드 방식으로 일한 기간은 어느 정도입니까?',
     helpText:
@@ -100,7 +100,7 @@ export const questions = [
   q({
     id: 'META_EXTERNAL',
     type: 'multiChoice',
-    section: '메타 문항',
+    section: '기본 정보',
     title: '최근 6주 외부 협업 접점',
     question: '최근 6주 동안 업무상 자주 협업했거나 요청을 주고받은 외부 접점을 선택해주세요.',
     helpText:
@@ -120,10 +120,10 @@ export const questions = [
   q({
     id: 'META_CBT',
     type: 'singleChoice',
-    section: '메타 문항',
+    section: '기본 정보',
     title: 'CBT/신규 실험 관여 여부',
-    question: '최근 6주 동안 AI Editor 등 CBT 또는 신규 실험 워크스트림에 직접 관여했습니까?',
-    helpText: 'CBT/신규 실험의 운영 기준을 별도로 보기 위한 라우팅 문항입니다.',
+    question: '최근 6주 동안 AI Editor 등 CBT 또는 신규 실험 업무에 직접 관여했습니까?',
+    helpText: 'CBT/신규 실험의 운영 기준을 별도로 보기 위한 문항입니다.',
     options: ['예', '아니오'],
   }),
 
@@ -160,7 +160,7 @@ export const questions = [
   scale('E06', 'E. 다직군 협업 인터페이스', '시스템 중심 문제 해결', '직군 간 이슈가 생겼을 때 책임 공방보다 인터페이스와 시스템 문제를 먼저 본다.', '개인의 잘잘못보다 재발을 줄이는 구조를 논의하는지 기준으로 답해주세요.', 'blameless-collaboration'),
 
   scale('F01', 'F. 제품별 실행 방식과 성숙도 관리', '운영/실험 방식 차이', '운영 중인 제품과 CBT/실험 단계 제품의 실행 방식 차이를 팀이 이해하고 있다.', '정식 운영 제품과 실험 제품에 같은 기준을 적용해야 한다는 뜻이 아닙니다. 차이가 인식되는지 봅니다.', 'product-maturity'),
-  scale('F02', 'F. 제품별 실행 방식과 성숙도 관리', '소규모 전담 공유', 'AI Editor처럼 소규모 전담으로 진행되는 워크스트림도 필요한 수준으로 팀에 공유된다.', '모든 세부 진행을 공유해야 한다는 뜻은 아닙니다. 팀 정렬에 필요한 정보가 공유되는지 기준으로 답해주세요.', 'cbt-sharing', { allowNA: true }),
+  scale('F02', 'F. 제품별 실행 방식과 성숙도 관리', '소규모 전담 공유', 'AI Editor처럼 소규모 전담으로 진행되는 업무도 필요한 수준으로 팀에 공유된다.', '모든 세부 진행을 공유해야 한다는 뜻은 아닙니다. 팀 정렬에 필요한 정보가 공유되는지 기준으로 답해주세요.', 'cbt-sharing', { allowNA: true }),
   scale('F03', 'F. 제품별 실행 방식과 성숙도 관리', '실험/엄격 검토 구분', '제품별로 빠르게 실험해도 되는 영역과 더 엄격히 검토해야 하는 영역이 구분되어 있다.', '속도와 리스크 관리 기준이 제품 또는 기능 성격에 따라 구분되는지 봅니다.', 'risk-tiering'),
   scale('F04', 'F. 제품별 실행 방식과 성숙도 관리', '제품화 기준', 'CBT/실험 단계 서비스가 정식 제품으로 넘어가기 위한 기준이 대체로 명확하다.', '이용, 품질, 고객 피드백, 운영 가능성 등 제품화 판단 기준이 있는지 기준으로 답해주세요.', 'productization'),
   scale('F05', 'F. 제품별 실행 방식과 성숙도 관리', '제품 간 학습 공유', '각 제품에서 얻은 학습과 실패 사례가 다른 제품에도 재사용될 수 있게 공유된다.', '회고, 문서, 회의, 사례 공유 등 어떤 방식이든 학습이 제품 간 이동하는지 봅니다.', 'learning-transfer'),
@@ -266,7 +266,7 @@ export const questions = [
     helpText: '운영 제품과 CBT/실험 제품을 모두 떠올려 가장 가까운 항목을 고르세요.',
     options: [
       '운영 제품과 CBT/실험 제품의 기준 차이 불명확',
-      '소규모 전담 워크스트림의 공유 부족',
+      '소규모 전담 업무의 공유 부족',
       '빠른 구현 방식의 리스크 관리 부족',
       '제품화 기준 불명확',
       '제품 간 학습 공유 부족',

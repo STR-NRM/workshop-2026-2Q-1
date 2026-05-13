@@ -65,4 +65,4 @@ Do not commit `.env.local`, OpenAI keys, Firebase service account JSON files, or
 
 GitHub Pages builds through `.github/workflows/deploy.yml`. The workflow is manual (`workflow_dispatch`) because this private repository's current GitHub plan returned `Pages not supported` when Pages enablement was attempted.
 
-After Pages support is enabled for the repo, run the workflow from the Actions tab. The workflow builds the app in Firebase mode, so team members can open the GitHub Pages URL from their phone or computer and write responses directly to the dedicated Firebase Realtime Database without local setup. OpenAI keys, GitHub tokens, and Firebase service account JSON files must remain outside the repo.
+After Pages support is enabled for the repo, run the workflow from the Actions tab. The workflow builds the app in Firebase 모드, so team members can open the GitHub Pages URL from their phone or computer and write responses directly to the dedicated Firebase Realtime Database without local setup. OpenAI keys, GitHub tokens, and Firebase service account JSON files must remain outside the repo.

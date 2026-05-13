@@ -64,13 +64,13 @@ function Metric({ label, value, hint }) {
 }
 
 function DataSourceInfo({ dataSource }) {
-  const databaseHost = dataSource.databaseURL ? new URL(dataSource.databaseURL).host : 'not configured';
+  const databaseHost = dataSource.databaseURL ? new URL(dataSource.databaseURL).host : '설정되지 않음';
   return (
     <div className={styles.dataSource}>
-      <span>mode: {dataSource.mode}</span>
-      <span>project: {dataSource.projectId || 'not configured'}</span>
-      <span>db: {databaseHost}</span>
-      <span>path: {dataSource.namespace}</span>
+      <span>운영 모드: {dataSource.mode}</span>
+      <span>Firebase 프로젝트: {dataSource.projectId || '설정되지 않음'}</span>
+      <span>DB: {databaseHost}</span>
+      <span>저장 경로: {dataSource.namespace}</span>
     </div>
   );
 }
@@ -90,7 +90,7 @@ const analysisConfigs = {
     type: 'comprehensive',
     tabId: 'ai-comprehensive',
     tabLabel: 'AI 종합',
-    eyebrow: 'AI Comprehensive',
+    eyebrow: 'AI 종합 분석',
     title: '종합 AI 리포트',
     description: '정량과 주관식을 함께 보고 워크샵 의제, 핵심 병목, 4주 실행 실험을 도출합니다.',
     buttonLabel: '종합 리포트 생성/갱신',
@@ -99,21 +99,23 @@ const analysisConfigs = {
     type: 'closedEnded',
     tabId: 'ai-closed',
     tabLabel: 'AI 비주관식',
-    eyebrow: 'AI Closed-ended',
+    eyebrow: 'AI 선택/척도 분석',
     title: '비주관식 문항 AI 리포트',
-    description: '리커트, 단일선택, 복수선택 결과만으로 정량 신호와 선택 분포를 해석합니다.',
+    description: '리커트 척도, 단일선택, 복수선택 결과만으로 정량 신호와 선택 분포를 해석합니다.',
     buttonLabel: '비주관식 리포트 생성/갱신',
   },
   textByQuestion: {
     type: 'textByQuestion',
     tabId: 'ai-text',
     tabLabel: 'AI 주관식',
-    eyebrow: 'AI Text',
+    eyebrow: 'AI 서술형 분석',
     title: '주관식 문항별 AI 리포트',
     description: '서술형 응답을 문항별로 나누어 반복 테마, 소수 의견, 토론 질문을 정리합니다.',
     buttonLabel: '주관식 리포트 생성/갱신',
   },
 };
+
+const allAnalysisTypes = Object.keys(analysisConfigs);
 
 function percent(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return 0;
@@ -156,7 +158,7 @@ function buildOverview(dashboard) {
   const highestAxis = [...validAxes].sort((a, b) => b.average - a.average)[0] || null;
   const bottleneck = topChoice(dashboard, 'CHOICE01');
   const improvement = topChoice(dashboard, 'CHOICE02');
-  const workstream = topChoice(dashboard, 'META_WORKSTREAM');
+  const workArea = topChoice(dashboard, 'META_WORKSTREAM');
   const discussion = topChoice(dashboard, 'CHOICE06');
   const lowestQuestion = dashboard.lowAverage[0] || null;
   const splitQuestion = dashboard.highVariance[0] || null;
@@ -194,9 +196,9 @@ function buildOverview(dashboard) {
         detail: improvement ? `${improvement.count}/${improvement.total} 선택. 바로 실험 가능한 크기로 쪼개야 합니다.` : '선택형 응답이 아직 없습니다.',
       },
       {
-        label: '주요 워크스트림',
-        value: workstream ? workstream.label : '-',
-        detail: workstream ? `${workstream.count}회 선택. 제품별 응답 쏠림이 있는지 해석에 반영합니다.` : '선택형 응답이 아직 없습니다.',
+        label: '주요 제품/업무 영역',
+        value: workArea ? workArea.label : '-',
+        detail: workArea ? `${workArea.count}회 선택. 제품이나 업무 영역별 응답 쏠림이 있는지 해석에 반영합니다.` : '선택형 응답이 아직 없습니다.',
       },
       {
         label: '분과 토론 관심',
@@ -549,7 +551,7 @@ export default function Result() {
   const [activeTab, setActiveTab] = useState('overview');
   const [openAiKey, setOpenAiKey] = useState('');
   const [analysisProgress, setAnalysisProgress] = useState('');
-  const [analysisRunningType, setAnalysisRunningType] = useState('');
+  const [analysisRunningTypes, setAnalysisRunningTypes] = useState([]);
 
   const dashboard = useMemo(
     () => buildDashboardStats(allResponses, respondents),
@@ -583,41 +585,49 @@ export default function Result() {
   }, []);
 
   useEffect(() => {
-    if (!analysisRunningType) return undefined;
+    if (!analysisRunningTypes.length) return undefined;
     const handleBeforeUnload = (event) => {
       event.preventDefault();
       event.returnValue = '';
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [analysisRunningType]);
+  }, [analysisRunningTypes.length]);
 
-  const runAnalysis = async (analysisType) => {
-    const config = analysisConfigs[analysisType];
-    setActiveTab(config.tabId);
+  const runAllAnalyses = async (sourceType = 'comprehensive') => {
+    const sourceConfig = analysisConfigs[sourceType] || analysisConfigs.comprehensive;
+    setActiveTab(sourceConfig.tabId);
     setAnalysisError('');
     if (!openAiKey.trim()) {
       setAnalysisError('OpenAI API key를 입력해야 AI 분석을 생성할 수 있습니다.');
       return;
     }
-    setAnalysisRunningType(analysisType);
-    setAnalysisProgress(`${config.title}를 생성하는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.`);
+    if (!canRunAnalysis) return;
+
+    setAnalysisRunningTypes(allAnalysisTypes);
+    setAnalysisProgress('AI 리포트 3개를 동시에 생성하는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.');
     try {
       const payload = buildAiAnalysisPayload(dashboard, allResponses, respondents);
-      const generated = await requestWorkshopAnalysis({
-        apiKey: openAiKey,
-        payload: payloadForAnalysis(analysisType, payload),
-        analysisType,
-      });
-      setAnalysisProgress(`${config.title}를 Firebase에 저장하는 중입니다.`);
-      const nextAnalysis = mergeAnalysisReport(analysis, generated);
+      const generatedReports = await Promise.all(
+        allAnalysisTypes.map((analysisType) => requestWorkshopAnalysis({
+          apiKey: openAiKey,
+          payload: payloadForAnalysis(analysisType, payload),
+          analysisType,
+        })),
+      );
+      setAnalysisProgress('AI 리포트 3개를 Firebase에 저장하는 중입니다.');
+      const latestAnalysis = await analysisService.getComprehensiveAnalysis();
+      const nextAnalysis = generatedReports.reduce(
+        (currentAnalysis, report) => mergeAnalysisReport(currentAnalysis, report),
+        latestAnalysis || analysis,
+      );
       const saved = await analysisService.saveComprehensiveAnalysis(nextAnalysis);
       setAnalysis(saved);
     } catch (err) {
       console.error(err);
       setAnalysisError(err.message || 'AI 분석 생성에 실패했습니다.');
     } finally {
-      setAnalysisRunningType('');
+      setAnalysisRunningTypes([]);
       setAnalysisProgress('');
     }
   };
@@ -649,6 +659,7 @@ export default function Result() {
   const generatedReportTypes = existingReportTypes(analysis);
   const activeAnalysisConfig = Object.values(analysisConfigs).find((config) => config.tabId === activeTab);
   const activeReport = activeAnalysisConfig ? getStoredReport(analysis, activeAnalysisConfig.type) : null;
+  const isRunningAllAnalyses = allAnalysisTypes.every((type) => analysisRunningTypes.includes(type));
 
   return (
     <AppShell wide>
@@ -658,7 +669,7 @@ export default function Result() {
         description="개인 평가가 아니라 운영 병목, 이견, 4주 실행 실험 후보를 찾기 위한 결과 화면입니다."
         meta={
           <>
-            <span>{usingLocalStore ? 'Local QA mode' : 'Firebase mode'}</span>
+            <span>{usingLocalStore ? '로컬 QA 모드' : 'Firebase 모드'}</span>
             <span>{loading ? '동기화 중' : '동기화 완료'}</span>
             <span>{analysis?.analyzedAt ? `AI 분석 ${formatTime(analysis.analyzedAt)}` : 'AI 분석 대기'}</span>
           </>
@@ -667,8 +678,8 @@ export default function Result() {
 
       <div className={styles.actions}>
         <Button variant="secondary" onClick={loadData} loading={loading}>새로고침</Button>
-        <Button variant="ghost" onClick={exportCsv}>CSV export</Button>
-        <Button variant="ghost" onClick={exportJson}>JSON export</Button>
+        <Button variant="ghost" onClick={exportCsv}>CSV 내보내기</Button>
+        <Button variant="ghost" onClick={exportJson}>JSON 내보내기</Button>
       </div>
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
       <DataSourceInfo dataSource={dataSource} />
@@ -677,7 +688,7 @@ export default function Result() {
         <Metric label="응답 세션" value={`${dashboard.respondentCount}명`} hint="응답 시작 기준" />
         <Metric label="완료" value={`${dashboard.completedCount}명`} hint="최종 제출 기준" />
         <Metric label="문항 정의" value={`${questions.length}개`} hint="역할/조건부 포함" />
-        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="결과 화면 버튼으로 생성" />
+        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="버튼 하나로 3종 동시 생성" />
       </div>
 
       <div className={styles.tabs}>
@@ -719,7 +730,7 @@ export default function Result() {
           <div className={styles.grid}>
             <Panel className={styles.panel}>
               <SectionTitle
-                eyebrow="Overview"
+                eyebrow="결과 요약"
                 title="축별 평균"
                 description="5점 척도 문항을 운영 축별로 묶은 평균입니다. 응답 수가 적을 때는 방향성 신호로만 해석해야 합니다."
               />
@@ -750,7 +761,7 @@ export default function Result() {
 
             <Panel className={styles.panel}>
               <SectionTitle
-                eyebrow="Reading Guide"
+                eyebrow="해석 기준"
                 title="해석 기준"
                 description="수치가 낮거나 높다는 사실보다, 왜 그런 경험 차이가 생겼는지 확인하는 것이 중요합니다."
               />
@@ -768,7 +779,7 @@ export default function Result() {
       {activeTab === 'signals' ? (
         <Panel className={styles.panel}>
           <SectionTitle
-            eyebrow="Priority Signals"
+            eyebrow="우선 신호"
             title="우선 확인할 신호"
             description="아래 신호는 결론이 아니라 워크샵에서 먼저 질문해야 할 후보입니다. 낮은 평균, 큰 이견, N/A는 각각 의미가 다릅니다."
           />
@@ -801,7 +812,7 @@ export default function Result() {
       {activeTab === 'questions' ? (
         <Panel className={styles.panel}>
           <SectionTitle
-            eyebrow="Question Details"
+            eyebrow="문항별 결과"
             title="문항별 결과"
             description="리커트 문항은 1~5점 분포와 평균을, 선택형 문항은 선택 비중 막대를 함께 봅니다. 낮은 평균과 큰 분산은 바로 결론이 아니라 토론 후보입니다."
           />
@@ -816,7 +827,7 @@ export default function Result() {
       {activeTab === 'text' ? (
         <Panel className={styles.panel}>
           <SectionTitle
-            eyebrow="Text Responses"
+            eyebrow="서술형 응답"
             title="서술형 응답"
             description="개인 식별 가능 표현은 워크샵 공유 전에 반드시 제거해야 합니다."
           />
@@ -857,22 +868,33 @@ export default function Result() {
                 spellCheck="false"
               />
               <Button
-                onClick={() => runAnalysis(activeAnalysisConfig.type)}
-                loading={analysisRunningType === activeAnalysisConfig.type}
-                disabled={!canRunAnalysis || Boolean(analysisRunningType)}
+                onClick={() => runAllAnalyses(activeAnalysisConfig.type)}
+                loading={isRunningAllAnalyses}
+                disabled={!canRunAnalysis || Boolean(analysisRunningTypes.length)}
               >
                 {activeAnalysisConfig.buttonLabel}
               </Button>
+              <small className={styles.controlHelp}>
+                어떤 AI 리포트 탭에서 누르더라도 3종 리포트가 동시에 생성되고 각 탭에 저장됩니다.
+              </small>
             </div>
           </div>
           <div className={styles.reportStatusGrid}>
             {Object.values(analysisConfigs).map((config) => (
               <div
                 key={config.type}
-                className={`${styles.reportStatus} ${generatedReportTypes.includes(config.type) ? styles.reportReady : ''}`}
+                className={[
+                  styles.reportStatus,
+                  generatedReportTypes.includes(config.type) ? styles.reportReady : '',
+                  analysisRunningTypes.includes(config.type) ? styles.reportRunning : '',
+                ].filter(Boolean).join(' ')}
               >
                 <strong>{config.tabLabel}</strong>
-                <span>{generatedReportTypes.includes(config.type) ? '생성됨' : '미생성'}</span>
+                <span>
+                  {analysisRunningTypes.includes(config.type)
+                    ? '생성 중'
+                    : generatedReportTypes.includes(config.type) ? '생성됨' : '미생성'}
+                </span>
               </div>
             ))}
           </div>
@@ -881,17 +903,17 @@ export default function Result() {
           {activeReport ? (
             <div className={styles.analysis}>
               <div className={styles.analysisMeta}>
-                <span>model: {activeReport.model || '-'}</span>
-                <span>reasoning: {activeReport.reasoningEffort || '-'}</span>
-                <span>generated: {formatTime(activeReport.analyzedAt)}</span>
-                <span>respondents: {activeReport.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
+                <span>모델: {activeReport.model || '-'}</span>
+                <span>추론 수준: {activeReport.reasoningEffort || '-'}</span>
+                <span>생성 시각: {formatTime(activeReport.analyzedAt)}</span>
+                <span>응답자: {activeReport.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
               </div>
               <MarkdownReport text={activeReport.result || ''} />
             </div>
           ) : (
             <div className={styles.emptyState}>
               <strong>아직 이 리포트는 생성되지 않았습니다.</strong>
-              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 이 화면에 해당하는 리포트만 생성합니다.</span>
+              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 3종 AI 리포트가 동시에 생성되고, 이 탭에는 해당 리포트가 표시됩니다.</span>
             </div>
           )}
         </Panel>

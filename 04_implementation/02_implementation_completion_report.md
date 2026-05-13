@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.6 결과 화면 요약/우선신호/문항별 시각화 개선, AI 리포트 3개 화면 분리.
+- 업데이트 내용: v1.7 결과 화면 용어 정리, AI 리포트 3개 화면 분리, 모든 AI 생성 버튼의 3종 동시 생성 구조 반영.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` 설문 앱
 
@@ -36,10 +36,10 @@
 - 축별 요약 차트
 - 객관식 분포
 - 서술형 응답 확인
-- CSV/JSON export
+- CSV/JSON 내보내기
 - AI 분석 결과 표시
 - 종합/비주관식/주관식 AI 리포트 화면 분리
-- 리포트별 AI 분석 생성 버튼 분리
+- 어느 AI 리포트 탭에서 생성 버튼을 눌러도 3종 리포트가 동시에 생성되는 구조
 - 브라우저 OpenAI Responses API 분석 경로
 - AI 분석 결과 Firebase 저장
 - 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트
@@ -66,7 +66,7 @@ npm audit --omit=dev
 - 역할/외부 협업/CBT 라우팅 포함 전체 설문 완주 확인
 - 완료 화면 확인
 - 결과 화면 진입 확인
-- 결과 요약, 축별 평균, export 버튼, AI 종합/비주관식/주관식 탭 존재 확인
+- 결과 요약, 축별 평균, 내보내기 버튼, AI 종합/비주관식/주관식 탭 존재 확인
 - 콘솔 error 없음 확인
 
 추가 수정:
@@ -75,7 +75,7 @@ npm audit --omit=dev
 - lazy route blank frame 방지를 위한 로딩 fallback 추가
 - 결과 차트 애니메이션 중간 프레임 방지를 위해 차트 animation 비활성화
 - 결과 차트와 설문 라우트 code split 적용
-- GitHub Pages workflow에 Firebase mode 빌드 환경값 반영
+- GitHub Pages workflow에 Firebase 모드 빌드 환경값 반영
 - GitHub Pages enablement 시도 결과 현재 private repo plan에서는 지원되지 않음을 확인하고, workflow를 수동 실행용으로 조정
 - Firebase Auth Anonymous provider 활성화
 - Firebase RTDB rules 재배포
@@ -85,7 +85,7 @@ npm audit --omit=dev
 - 앱 코드에서 2025/4Q/이전 Firebase 키/`VITE_OPENAI_API_KEY` 번들 주입/gpt-5.1 잔여 패턴 없음 확인.
 - GitHub PAT와 OpenAI API key는 파일에 저장하지 않음.
 - OpenAI 키는 브라우저 환경변수, GitHub Actions secret, Firebase에 저장하지 않고 결과 화면 런타임 입력값으로만 사용한다.
-- 결과 화면의 AI 종합/비주관식/주관식 탭 외 별도 AI 분석 실행 경로는 제거했다.
+- 결과 화면의 AI 종합/비주관식/주관식 탭 외 별도 AI 분석 실행 경로는 제거했다. 어느 탭에서 생성 버튼을 눌러도 3종 리포트가 동시에 생성된다.
 - Firebase service account JSON은 `.gitignore` 대상이며 현재 앱 실행 경로에는 필요하지 않다.
 - Firebase web config는 클라이언트 공개 설정이므로 GitHub Pages build env에 포함했다. 데이터 보호는 API key 은닉이 아니라 Auth와 RTDB rules로 수행한다.
 - `npm audit --omit=dev` 기준 production dependency 취약점 0개.
@@ -115,4 +115,4 @@ GitHub:
 
 1. GitHub Pages는 현재 private repo plan에서 지원되지 않아 실제 배포 활성화가 남아 있다.
 2. AI 리포트 생성자는 결과 화면에서 OpenAI API key를 입력해야 한다. 응답자는 별도 설정 없이 설문을 제출할 수 있다.
-3. GitHub Pages 배포본은 Firebase mode로 빌드되며, 팀원은 별도 로컬 설정 없이 URL 접속만으로 응답을 Firebase에 저장할 수 있다.
+3. GitHub Pages 배포본은 Firebase 모드로 빌드되며, 팀원은 별도 로컬 설정 없이 URL 접속만으로 응답을 Firebase에 저장할 수 있다.

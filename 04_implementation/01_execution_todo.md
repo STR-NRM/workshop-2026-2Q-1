@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.7 결과 화면 요약/우선신호/문항별 시각화 개선, AI 리포트 3개 화면 분리.
+- 업데이트 내용: v1.8 결과 화면 용어 정리, AI 리포트 3개 화면 분리, 모든 AI 생성 버튼의 3종 동시 생성 구조 반영.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` production-ready 개발
 
@@ -63,9 +63,10 @@
 - [x] 축별 요약 구현
 - [x] 객관식 분포 구현
 - [x] 서술형 원문 결과 화면 표시
-- [x] CSV/JSON export 구현
+- [x] CSV/JSON 내보내기 구현
 - [x] AI 분석 결과 표시 구현
-- [x] 종합/비주관식/주관식 AI 리포트 화면과 생성 버튼 분리
+- [x] 종합/비주관식/주관식 AI 리포트 화면 분리
+- [x] 어떤 AI 리포트 탭에서 생성 버튼을 눌러도 3종 리포트가 동시에 생성되도록 구현
 - [x] 브라우저 OpenAI Responses API 분석 경로 작성
 - [x] AI 분석 결과 Firebase 저장 경로 작성
 - [x] 한 문장 결론, 쉬운 분석 요약, 3~5개 실행 제안으로 시작하는 전문가 검토형 리포트 프롬프트 작성
@@ -108,19 +109,19 @@
 - Firebase Auth: Anonymous provider 활성화 완료.
 - Firebase rules: `firebase/database.rules.json` 배포 완료.
 - Firebase local config: `.env.local`에만 저장했고 git에는 포함하지 않음.
-- GitHub Pages build: workflow에 공개 가능한 Firebase web config를 넣어 Pages 배포본이 `Firebase mode`로 빌드되도록 수정.
+- GitHub Pages build: workflow에 공개 가능한 Firebase web config를 넣어 Pages 배포본이 `Firebase 모드`로 빌드되도록 수정.
 - GitHub Pages enablement: API 활성화 시도 결과 현재 private repo plan에서 Pages 미지원. 자동 push 트리거는 실패를 반복하지 않도록 제거하고 수동 실행으로 제한.
 - GitHub CLI: 로그인 완료. `repo`, `workflow` 권한 확인.
 - GitHub push/merge: `main`과 `codex/build-workshop-2026-2q-1`에 push 완료. 원격 기본 브랜치는 `main`.
 - AI 분석: Firebase Functions를 제거하고 결과 화면에서 런타임 OpenAI key로 직접 생성한 뒤 Firebase에 저장하는 방식으로 단순화.
 - 로컬 QA: `VITE_USE_LOCAL_STORE=true`로 설문 완주와 결과 화면 확인 완료.
-- Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 Firebase mode 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
+- Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 Firebase 모드 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
 - Browser plugin QA 참고: Codex 인앱 브라우저에서는 Firebase Auth 네트워크 오류가 발생했으나, 동일 설정이 Node SDK와 사용자의 Chrome에서는 정상 동작했다.
 
 ## 2. 완료 기준
 
 - 4Q Firebase 키, 4Q 문구, 4Q 프롬프트, 빌드 환경변수 OpenAI key embedding 방식이 app code에 남아 있지 않다.
-- 종합/비주관식/주관식 AI 리포트는 각각 별도 화면과 별도 생성 버튼을 갖는다.
+- 종합/비주관식/주관식 AI 리포트는 각각 별도 화면을 갖고, 어느 탭에서 생성 버튼을 눌러도 3종 리포트가 동시에 생성된다.
 - 설문 문항과 라우팅이 `07_final_question_bank_source_of_truth.md`와 일치한다.
 - Firebase 없이도 localStorage fallback으로 로컬 QA가 가능하다.
 - Firebase 설정 후에는 모든 팀원이 별도 설정 없이 응답하고 결과를 볼 수 있다.

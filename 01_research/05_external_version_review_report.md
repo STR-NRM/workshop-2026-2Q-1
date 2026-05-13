@@ -121,7 +121,7 @@
 
 특히 다음과 같은 형태는 분과 토론 전 pre-work로 적합하다.
 
-| 제품/워크스트림 | DRI | Backup | Contributor | Consulted |
+| 제품/업무 영역 | 책임 역할 | Backup | Contributor | Consulted |
 |---|---|---|---|---|
 | AI Agent |  |  |  |  |
 | AI Viewer |  |  |  |  |

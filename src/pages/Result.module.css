@@ -503,6 +503,12 @@
   outline-offset: 2px;
 }
 
+.controlHelp {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .analysis {
   display: flex;
   flex-direction: column;
@@ -555,6 +561,16 @@
 .reportReady {
   background: var(--surface);
   border-color: var(--border-strong);
+}
+
+.reportRunning {
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.reportRunning strong,
+.reportRunning span {
+  color: var(--surface);
 }
 
 .progressNote {

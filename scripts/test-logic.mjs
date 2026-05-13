@@ -14,7 +14,6 @@ import {
 import { requestWorkshopAnalysis } from '../src/utils/openaiAnalysis.js';
 
 assert.equal(hasExternalModule({ META_EXTERNAL: ['특별히 없음'] }), false);
-assert.equal(hasExternalModule({ META_EXTERNAL: ['응답하지 않음'] }), false);
 assert.equal(hasExternalModule({ META_EXTERNAL: ['서비스/디자인'] }), true);
 assert.equal(hasCbtModule({ META_CBT: '예' }), true);
 assert.equal(hasCbtModule({ META_CBT: '아니오' }), false);
