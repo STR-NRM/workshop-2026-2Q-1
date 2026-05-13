@@ -87,6 +87,15 @@ const analysisConfigs = {
     description: '점수/선택 결과와 서술형 응답을 함께 보고 워크샵에서 논의할 주제와 4주 동안 해볼 작은 개선을 정리합니다.',
     buttonLabel: '종합 리포트 생성/갱신',
   },
+  onePage: {
+    type: 'onePage',
+    tabId: 'ai-one-page',
+    tabLabel: 'AI 원페이지',
+    eyebrow: 'AI 원페이지 분석',
+    title: '원페이지 AI 리포트',
+    description: '모든 문항을 한 장으로 읽히는 이야기형 리포트로 정리하고, 직무별로 건네는 짧은 메시지를 함께 보여줍니다.',
+    buttonLabel: '원페이지 리포트 생성/갱신',
+  },
   closedEnded: {
     type: 'closedEnded',
     tabId: 'ai-closed',
@@ -482,6 +491,18 @@ function MarkdownReport({ text }) {
       return;
     }
     flushTable();
+    if (line.startsWith('>')) {
+      flushList();
+      const quote = line.replace(/^>\s?/, '').trim();
+      if (quote) {
+        nodes.push(
+          <blockquote key={`quote-${index}`} className={styles.reportQuote}>
+            {renderInline(quote, `quote-${index}`)}
+          </blockquote>,
+        );
+      }
+      return;
+    }
     const signal = extractReportSignal(line);
     if (signal) {
       flushList();
@@ -578,7 +599,7 @@ function analysisMatchesCurrentQuestions(analysis) {
       Object.entries(analysis.reports).filter(([, report]) => reportMatchesCurrentQuestions(report)),
     );
     if (!Object.keys(reports).length) return null;
-    const primary = reports.comprehensive || reports.closedEnded || reports.textByQuestion;
+    const primary = reports.comprehensive || reports.onePage || reports.closedEnded || reports.textByQuestion;
     return {
       ...analysis,
       result: primary?.result,
@@ -606,14 +627,14 @@ function mergeAnalysisReport(existingAnalysis, report) {
     ...previousReports,
     [report.analysisType]: report,
   };
-  const primary = reports.comprehensive || reports.closedEnded || reports.textByQuestion || report;
+  const primary = reports.comprehensive || reports.onePage || reports.closedEnded || reports.textByQuestion || report;
 
   return {
     result: primary.result,
     model: primary.model,
     reasoningEffort: primary.reasoningEffort,
     analyzedAt: Date.now(),
-    reportVersion: '2026-05-13-analysis-suite-v2',
+    reportVersion: '2026-05-13-analysis-suite-v3-one-page',
     inputSummary: primary.inputSummary,
     reports,
   };
@@ -691,7 +712,7 @@ export default function Result() {
     if (!canRunAnalysis) return;
 
     setAnalysisRunningTypes(allAnalysisTypes);
-      setAnalysisProgress('AI 리포트 3개를 동시에 만드는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.');
+    setAnalysisProgress('AI 리포트 4개를 동시에 만드는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.');
     try {
       const payload = buildAiAnalysisPayload(dashboard, allResponses, respondents);
       const generatedReports = await Promise.all(
@@ -701,7 +722,7 @@ export default function Result() {
           analysisType,
         })),
       );
-      setAnalysisProgress('AI 리포트 3개를 저장하는 중입니다.');
+      setAnalysisProgress('AI 리포트 4개를 저장하는 중입니다.');
       const latestAnalysis = await analysisService.getComprehensiveAnalysis();
       const nextAnalysis = generatedReports.reduce(
         (currentAnalysis, report) => mergeAnalysisReport(currentAnalysis, report),
@@ -772,7 +793,7 @@ export default function Result() {
         <Metric label="응답 시작" value={`${dashboard.respondentCount}명`} hint="설문을 시작한 인원" />
         <Metric label="완료" value={`${dashboard.completedCount}명`} hint="최종 제출 기준" />
         <Metric label="전체 문항" value={`${questions.length}개`} hint="직무별/추가 문항 포함" />
-        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="한 번에 3개 리포트 생성" />
+        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="한 번에 4개 리포트 생성" />
       </div>
 
       <div className={styles.tabs}>
@@ -781,9 +802,7 @@ export default function Result() {
           ['signals', '먼저 볼 신호'],
           ['questions', '문항별'],
           ['text', '서술형'],
-          [analysisConfigs.comprehensive.tabId, analysisConfigs.comprehensive.tabLabel],
-          [analysisConfigs.closedEnded.tabId, analysisConfigs.closedEnded.tabLabel],
-          [analysisConfigs.textByQuestion.tabId, analysisConfigs.textByQuestion.tabLabel],
+          ...Object.values(analysisConfigs).map((config) => [config.tabId, config.tabLabel]),
         ].map(([id, label]) => (
           <button
             key={id}
@@ -959,7 +978,7 @@ export default function Result() {
                 {activeAnalysisConfig.buttonLabel}
               </Button>
               <small className={styles.controlHelp}>
-                어떤 AI 리포트 탭에서 누르더라도 3개 리포트가 동시에 만들어지고 각 탭에 저장됩니다.
+                어떤 AI 리포트 탭에서 누르더라도 4개 리포트가 동시에 만들어지고 각 탭에 저장됩니다.
               </small>
             </div>
           </div>
@@ -995,7 +1014,7 @@ export default function Result() {
           ) : (
             <div className={styles.emptyState}>
               <strong>아직 이 리포트는 생성되지 않았습니다.</strong>
-              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 3개 AI 리포트가 동시에 만들어지고, 이 탭에는 해당 리포트가 표시됩니다.</span>
+              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 4개 AI 리포트가 동시에 만들어지고, 이 탭에는 해당 리포트가 표시됩니다.</span>
             </div>
           )}
         </Panel>
