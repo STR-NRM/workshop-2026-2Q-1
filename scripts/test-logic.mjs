@@ -266,14 +266,14 @@ assert.equal(comparisonPayload.comparisonRows.length, comparisonDataset.rows.len
 globalThis.fetch = async (url, options) => {
   assert.equal(url, 'https://api.openai.com/v1/responses');
   const body = JSON.parse(options.body);
-  assert.match(body.input, /비교 편지/);
+  assert.match(body.input, /한 장의 편지/);
   assert.match(body.input, /2025 하반기와 2026 상반기/);
   assert.match(body.input, /숫자, 평균, 응답 수, 문항 ID, 매핑 등급/);
   assert.match(body.input, /Executive Summary를 쓰지 마세요/);
   assert.doesNotMatch(body.input, /첫 섹션에는 반드시/);
   return {
     ok: true,
-    json: async () => ({ output_text: '# Executive Summary\n**한 문장 결론:** "비교 편지입니다."\n비교 편지 본문입니다.' }),
+    json: async () => ({ output_text: '# Executive Summary\n**한 문장 결론:** "편지입니다."\n편지 본문입니다.' }),
   };
 };
 
@@ -282,8 +282,8 @@ const comparisonLetter = await requestComparisonAnalysis({
   payload: comparisonPayload,
   analysisType: 'comparisonLetter',
 });
-assert.equal(comparisonLetter.result, '# 비교 편지\n\n비교 편지 본문입니다.');
-assert.equal(comparisonLetter.title, '비교 편지');
+assert.equal(comparisonLetter.result, '# 한 장의 편지\n\n편지 본문입니다.');
+assert.equal(comparisonLetter.title, '한 장의 편지');
 
 globalThis.fetch = async (url, options) => {
   assert.equal(url, 'https://api.openai.com/v1/responses');

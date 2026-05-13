@@ -2,17 +2,18 @@ const COMPARISON_REPORT_VERSION = '2026-05-14-comparison-analysis-v1';
 const DEFAULT_MODEL = 'gpt-5.5';
 const DEFAULT_REASONING_EFFORT = 'high';
 const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
+const LEGACY_COMPARISON_LETTER_HEADING = ['비교', '편지'].join(' ');
 
 export const comparisonAnalysisConfigs = {
   comparisonLetter: {
     type: 'comparisonLetter',
     tabId: 'ai-comparison-letter',
-    tabLabel: '💌 비교 편지',
-    title: '비교 편지',
+    tabLabel: '💌 한 장의 편지',
+    title: '한 장의 편지',
     narrative: true,
     goal:
       '2025 하반기와 2026 상반기 설문을 비교해 팀에게 건네는 짧고 따뜻한 편지를 작성하세요. 분석표가 아니라, 시간이 지나며 팀이 어떤 길을 지나왔는지 조심스럽게 읽어주는 편지여야 합니다.',
-    requiredSections: `# 비교 편지
+    requiredSections: `# 한 장의 편지
 - 제목 다음 줄에 "스쿼드 여러분께."처럼 짧은 인사말을 넣으세요.
 - 본문은 4문단만 작성하세요. 전체 분량은 750~1,000자 정도로 제한하세요.
 - 각 문단의 첫 문장은 굵게 쓰고, 첫 문장들만 이어 읽어도 작년에서 올해로 이어진 흐름이 보여야 합니다.
@@ -124,7 +125,7 @@ ${JSON.stringify(payload, null, 2)}
 - 목적은 평가가 아니라 작년에서 올해로 이어진 조직 신호를 읽고, 이번 워크샵에서 다룰 질문을 찾는 것입니다.
 
 작성 원칙:
-- ${isNarrative ? '반드시 "# 비교 편지"로 시작하고 Executive Summary를 쓰지 마세요.' : '반드시 "# Executive Summary"로 시작하세요.'}
+- ${isNarrative ? '반드시 "# 한 장의 편지"로 시작하고 Executive Summary를 쓰지 마세요.' : '반드시 "# Executive Summary"로 시작하세요.'}
 - ${isNarrative ? '한 문장 결론, 한문장 정리, 한문장 제안 형식을 쓰지 마세요.' : '첫 섹션에는 반드시 **한 문장 결론:** "핵심 문장"을 포함하세요.'}
 - 한국어로 작성하세요. 전문 용어를 쓰더라도 바로 쉬운 말로 풀어주세요.
 - 긍정/부정 어느 쪽으로도 몰아가지 말고, 근거가 약한 부분은 약하다고 말하세요.
@@ -154,8 +155,11 @@ function normalizeReport(text, analysisType) {
       .replace(/^#?\s*Executive Summary\s*/i, '')
       .replace(/^(?:[-*]\s*)?(?:\*\*)?\s*한\s*문장\s*결론\s*:[^\n]+\n?/i, '')
       .trim();
-    if (/^#\s+비교 편지/.test(cleaned)) return cleaned;
-    return `# 비교 편지\n\n${cleaned}`;
+    if (/^#\s+한 장의 편지/.test(cleaned)) return cleaned;
+    if (cleaned.startsWith(`# ${LEGACY_COMPARISON_LETTER_HEADING}`)) {
+      return cleaned.replace(`# ${LEGACY_COMPARISON_LETTER_HEADING}`, '# 한 장의 편지');
+    }
+    return `# 한 장의 편지\n\n${cleaned}`;
   }
   if (/^#\s*Executive Summary/i.test(trimmed)) return trimmed;
   if (/^Executive Summary/i.test(trimmed)) return `# ${trimmed}`;

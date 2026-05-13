@@ -751,23 +751,35 @@ export default function Result() {
         eyebrow={surveyInfo.organization}
         title="워크샵 설문 결과 리포트"
         description="개인 평가가 아니라 일이 막히는 지점, 의견 차이, 4주 동안 해볼 작은 개선을 찾기 위한 결과 화면입니다."
-        meta={
-          <>
-            <span>{loading ? '결과 불러오는 중' : '결과 불러옴'}</span>
-            <span>{analysis?.analyzedAt ? `리포트 생성 ${formatTime(analysis.analyzedAt)}` : '리포트 미생성'}</span>
-          </>
-        }
       />
 
       <div className={styles.toolbar}>
-        <Button variant="secondary" onClick={loadData} loading={loading}>새로고침</Button>
         <div className={styles.exportLinks} aria-label="결과 데이터 내보내기">
           <Link to="/comparison">작년 비교</Link>
+          <span aria-hidden="true">·</span>
+          <button type="button" onClick={loadData} disabled={loading}>새로고침</button>
+          {activeResultMode === 'ai' ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <button
+                type="button"
+                onClick={() => openReportDialog(activeAnalysisConfig.type)}
+                disabled={!canRunAnalysis || Boolean(analysisRunningTypes.length)}
+              >
+                리포트 생성/갱신
+              </button>
+            </>
+          ) : null}
           <span aria-hidden="true">·</span>
           <button type="button" onClick={exportCsv}>Excel CSV</button>
           <span aria-hidden="true">·</span>
           <button type="button" onClick={exportJson}>JSON</button>
         </div>
+        <details className={styles.statusDetails}>
+          <summary>상태</summary>
+          <span>{loading ? '결과 불러오는 중' : '결과 불러옴'}</span>
+          <span>{analysis?.analyzedAt ? `리포트 생성 ${formatTime(analysis.analyzedAt)}` : '리포트 미생성'}</span>
+        </details>
       </div>
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
 
@@ -974,47 +986,39 @@ export default function Result() {
               title={activeAnalysisConfig.title}
               description={activeAnalysisConfig.description}
             />
-            <div className={styles.reportControls}>
-              <button
-                type="button"
-                className={styles.reportOpenButton}
-                onClick={() => openReportDialog(activeAnalysisConfig.type)}
-                disabled={!canRunAnalysis || Boolean(analysisRunningTypes.length)}
-              >
-                리포트 생성/갱신
-              </button>
-              <small className={styles.controlHelp}>
-                누르면 키 입력 창이 열리고 {analysisReportCount}개 리포트가 동시에 만들어집니다.
-              </small>
+          </div>
+          <details className={styles.reportDetails}>
+            <summary>리포트 상태 · {generatedReportTypes.length}/{analysisReportCount}</summary>
+            <div className={styles.reportStatusGrid}>
+              {Object.values(analysisConfigs).map((config) => (
+                <div
+                  key={config.type}
+                  className={[
+                    styles.reportStatus,
+                    generatedReportTypes.includes(config.type) ? styles.reportReady : '',
+                    analysisRunningTypes.includes(config.type) ? styles.reportRunning : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <strong>{config.tabLabel}</strong>
+                  <span>
+                    {analysisRunningTypes.includes(config.type)
+                      ? '생성 중'
+                      : generatedReportTypes.includes(config.type) ? '생성됨' : '미생성'}
+                  </span>
+                </div>
+              ))}
             </div>
-          </div>
-          <div className={styles.reportStatusGrid}>
-            {Object.values(analysisConfigs).map((config) => (
-              <div
-                key={config.type}
-                className={[
-                  styles.reportStatus,
-                  generatedReportTypes.includes(config.type) ? styles.reportReady : '',
-                  analysisRunningTypes.includes(config.type) ? styles.reportRunning : '',
-                ].filter(Boolean).join(' ')}
-              >
-                <strong>{config.tabLabel}</strong>
-                <span>
-                  {analysisRunningTypes.includes(config.type)
-                    ? '생성 중'
-                    : generatedReportTypes.includes(config.type) ? '생성됨' : '미생성'}
-                </span>
-              </div>
-            ))}
-          </div>
-          {analysisError && !isReportDialogOpen ? <p className={styles.error}>{analysisError}</p> : null}
-          {analysisProgress && !isReportDialogOpen ? <p className={styles.progressNote}>{analysisProgress}</p> : null}
-          {activeReport ? (
-            <div className={styles.analysis}>
+            {activeReport ? (
               <div className={styles.analysisMeta}>
                 <span>생성 시각: {formatTime(activeReport.analyzedAt)}</span>
                 <span>응답자: {activeReport.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
               </div>
+            ) : null}
+          </details>
+          {analysisError && !isReportDialogOpen ? <p className={styles.error}>{analysisError}</p> : null}
+          {analysisProgress && !isReportDialogOpen ? <p className={styles.progressNote}>{analysisProgress}</p> : null}
+          {activeReport ? (
+            <div className={styles.analysis}>
               <MarkdownReport text={activeReportText} styles={styles} />
             </div>
           ) : (

@@ -33,6 +33,12 @@ function formatTime(timestamp) {
   return new Date(timestamp).toLocaleString('ko-KR');
 }
 
+function displayReportText(report, analysisType) {
+  const text = String(report?.result || '');
+  if (analysisType !== 'comparisonLetter') return text;
+  return text.replace(/^#\s+비교\s+편지/, '# 한 장의 편지');
+}
+
 function Metric({ label, value, hint }) {
   return (
     <div className={styles.metric}>
@@ -60,7 +66,7 @@ function ModeSwitch({ mode, onChange }) {
         onClick={() => onChange('ai')}
       >
         <strong>AI 비교</strong>
-        <span>비교 편지와 전문가식 해석 리포트입니다.</span>
+        <span>한 장의 편지와 전문가식 해석 리포트입니다.</span>
       </button>
     </div>
   );
@@ -305,6 +311,7 @@ export default function Comparison() {
   const visibleTabs = mode === 'ai' ? aiTabs : basicTabs;
   const activeAiConfig = Object.values(comparisonAnalysisConfigs).find((config) => config.tabId === activeTab);
   const activeReport = activeAiConfig ? comparisonAnalysis?.reports?.[activeAiConfig.type] : null;
+  const activeReportText = displayReportText(activeReport, activeAiConfig?.type);
   const generatedCount = Object.keys(comparisonAnalysis?.reports || {}).length;
 
   const changeMode = (nextMode) => {
@@ -344,12 +351,6 @@ export default function Comparison() {
         eyebrow="2025 하반기 ↔ 2026 상반기"
         title="작년과 올해 워크샵 비교"
         description="같거나 유사한 문항은 변화 방향을 보고, 달라진 문항은 조직 맥락의 변화로만 조심스럽게 해석합니다."
-        meta={
-          <>
-            <span>{loading ? '비교 데이터 불러오는 중' : '비교 데이터 준비됨'}</span>
-            <span>{comparisonAnalysis?.analyzedAt ? `비교 리포트 생성 ${formatTime(comparisonAnalysis.analyzedAt)}` : '비교 리포트 미생성'}</span>
-          </>
-        }
       />
 
       <div className={styles.toolbar}>
@@ -357,12 +358,21 @@ export default function Comparison() {
           <Link to="/admin">결과 페이지로 돌아가기</Link>
           <span aria-hidden="true">·</span>
           <button type="button" onClick={loadData}>새로고침</button>
+          {mode === 'ai' ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <button type="button" onClick={() => setIsDialogOpen(true)}>
+                비교 리포트 생성/갱신
+              </button>
+            </>
+          ) : null}
         </div>
-        {mode === 'ai' ? (
-          <button type="button" className={styles.generateLink} onClick={() => setIsDialogOpen(true)}>
-            비교 리포트 생성/갱신
-          </button>
-        ) : null}
+        <details className={styles.statusDetails}>
+          <summary>상태</summary>
+          <span>{loading ? '비교 데이터 불러오는 중' : '비교 데이터 준비됨'}</span>
+          <span>{comparisonAnalysis?.analyzedAt ? `비교 리포트 생성 ${formatTime(comparisonAnalysis.analyzedAt)}` : '비교 리포트 미생성'}</span>
+          <span>비교 리포트 {generatedCount}/{comparisonAnalysisTypes.length}</span>
+        </details>
       </div>
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
 
@@ -370,13 +380,12 @@ export default function Comparison() {
         <Metric label="2025 기준 응답" value={`${comparison.legacySurvey.validResponseCount}명`} hint={comparison.legacySurvey.validityRule} />
         <Metric label="2026 완료 응답" value={`${dashboard.completedCount}명`} hint="현재 설문 최종 제출 기준" />
         <Metric label="비교 매핑" value={`${comparison.rows.length}개`} hint="직접/제한/참고 비교 포함" />
-        <Metric label="비교 리포트" value={`${generatedCount}/${comparisonAnalysisTypes.length}`} hint="편지, 종합, 문항, 서술형" />
       </div>
 
       <ModeSwitch mode={mode} onChange={changeMode} />
       <div className={styles.modeGuide}>
         {mode === 'ai'
-          ? 'AI 비교는 기본 비교 결과를 바탕으로 해석을 돕는 보조 자료입니다. 비교 편지를 먼저 읽고, 종합·문항·서술형 리포트로 근거를 확인하세요.'
+          ? 'AI 비교는 기본 비교 결과를 바탕으로 해석을 돕는 보조 자료입니다. 한 장의 편지는 작년과 올해를 돌아보며 쓴 짧은 글이고, 종합·문항·서술형 리포트는 근거를 확인하는 화면입니다.'
           : '기본 비교는 AI 없이 계산한 화면입니다. 문항이 달라진 곳은 숫자보다 매핑 등급과 주의점을 함께 봐야 합니다.'}
       </div>
       <Tabs tabs={visibleTabs} activeTab={activeTab} onChange={setActiveTab} />
@@ -391,16 +400,19 @@ export default function Comparison() {
           <Panel className={styles.aiSide}>
             <strong>{activeAiConfig?.title}</strong>
             <p>비교 리포트는 올해 응답과 2025 집계 기준을 함께 보되, 문항이 달라진 부분은 단정하지 않도록 작성합니다.</p>
-            <small>
-              {runningTypes.length
-                ? `생성 중: ${runningTypes.length}개 리포트`
-                : activeReport
-                  ? `생성됨: ${formatTime(activeReport.analyzedAt)}`
-                  : '아직 생성되지 않았습니다.'}
-            </small>
+            <details className={styles.reportDetails}>
+              <summary>리포트 상태 · {generatedCount}/{comparisonAnalysisTypes.length}</summary>
+              <span>
+                {runningTypes.length
+                  ? `생성 중: ${runningTypes.length}개 리포트`
+                  : activeReport
+                    ? `생성됨: ${formatTime(activeReport.analyzedAt)}`
+                    : '아직 생성되지 않았습니다.'}
+              </span>
+            </details>
           </Panel>
-          {activeReport?.result ? (
-            <MarkdownReport text={activeReport.result} styles={styles} />
+          {activeReportText ? (
+            <MarkdownReport text={activeReportText} styles={styles} />
           ) : (
             <Panel className={styles.emptyReport}>
               아직 생성된 비교 리포트가 없습니다. 오른쪽 위의 생성 버튼으로 비교 리포트를 만들 수 있습니다.
@@ -413,7 +425,7 @@ export default function Comparison() {
         <div className={styles.dialogBackdrop} role="presentation">
           <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="comparison-report-dialog-title">
             <h2 id="comparison-report-dialog-title">비교 리포트 생성</h2>
-            <p>비교 편지, 종합, 문항 변화, 서술형 변화 리포트 4개를 동시에 만듭니다.</p>
+            <p>한 장의 편지, 종합, 문항 변화, 서술형 변화 리포트 4개를 동시에 만듭니다.</p>
             <label>
               <span>리포트 생성용 키</span>
               <input
