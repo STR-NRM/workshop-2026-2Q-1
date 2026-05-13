@@ -422,52 +422,259 @@
   line-height: 1.5;
 }
 
-.markdownReport,
-.emptyReport {
+.emptyReport,
+.reportBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   padding: 22px;
+  color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-.markdownReport h2 {
-  margin-bottom: 14px;
-  font-size: 24px;
-  line-height: 1.3;
+.reportHeroConclusion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  color: var(--surface);
+  background: var(--text);
+  border-radius: var(--radius);
 }
 
-.markdownReport h3 {
-  margin-top: 22px;
-  margin-bottom: 9px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-  font-size: 18px;
+.reportHeroConclusion span,
+.reportCallout span {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.reportHeroConclusion span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.reportHeroConclusion strong {
+  max-width: 980px;
+  color: var(--surface);
+  font-size: 30px;
+  line-height: 1.28;
+}
+
+.reportBody h2 {
+  padding: 18px;
+  color: var(--surface);
+  background: var(--text);
+  border-radius: var(--radius);
+  font-size: 24px;
   line-height: 1.35;
 }
 
-.markdownReport p,
-.markdownReport blockquote,
+.reportBody h3 {
+  margin-top: 10px;
+  padding-top: 18px;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  font-size: 20px;
+  line-height: 1.45;
+}
+
+.reportBody h4 {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.reportCallout {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 15px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.reportCallout strong {
+  font-size: 19px;
+  line-height: 1.38;
+}
+
+.reportCalloutSummary {
+  background: var(--surface);
+}
+
+.reportCalloutSummary span {
+  color: var(--text-muted);
+}
+
+.reportCalloutSuggestion {
+  color: var(--surface);
+  background: var(--text);
+  border-color: var(--text);
+}
+
+.reportCalloutSuggestion span,
+.reportCalloutSuggestion strong {
+  color: var(--surface);
+}
+
+.reportBody .reportHeroConclusion strong,
+.reportBody .reportCalloutSuggestion strong,
+.reportBody h2 strong,
+.reportBody .reportTable th strong {
+  color: var(--surface);
+}
+
+.reportCalloutConclusion {
+  background: var(--surface-muted);
+}
+
+.reportCalloutConclusion span {
+  color: var(--text-muted);
+}
+
+.reportBody p,
+.reportList,
 .emptyReport {
   color: var(--text-muted);
   font-size: 15px;
-  line-height: 1.8;
+  line-height: 1.75;
 }
 
-.markdownReport strong {
+.reportBody strong {
   color: var(--text);
+  font-weight: 850;
 }
 
-.markdownReport .bullet {
-  padding-left: 12px;
-}
-
-.markdownReport blockquote {
-  margin: 12px 0;
-  padding: 14px 16px;
+.reportBody code {
+  padding: 2px 5px;
   color: var(--text);
   background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font);
+  font-size: 0.92em;
+}
+
+.reportQuote {
+  position: relative;
+  margin: 0;
+  padding: 18px 18px 18px 46px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
   border-left: 4px solid var(--text);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.reportQuote::before {
+  content: "“";
+  position: absolute;
+  top: 4px;
+  left: 15px;
+  color: var(--text);
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.reportQuote strong {
+  color: var(--text);
+}
+
+.roleMessageCard {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.roleMessageRecipient {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.roleMessageRecipient::before {
+  content: "";
+  flex: 0 0 24px;
+  width: 24px;
+  height: 2px;
+  background: var(--text);
+}
+
+.roleMessageText {
+  margin: 0;
+  padding: 15px 16px;
+  color: var(--text-muted);
+  background: var(--surface-muted);
+  border-left: 3px solid var(--text);
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.roleMessageText strong {
+  color: var(--text);
+}
+
+.reportList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 16px 14px 32px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.reportTableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.reportTable {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.reportTable th,
+.reportTable td {
+  padding: 11px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.reportTable th {
+  color: var(--surface);
+  background: var(--text);
+  font-weight: 850;
+}
+
+.reportTable tr:last-child td {
+  border-bottom: 0;
+}
+
+.reportTable td {
+  color: var(--text-muted);
+  background: var(--surface);
 }
 
 .dialogBackdrop {
@@ -564,6 +771,53 @@
 
   .metric {
     min-height: 96px;
+  }
+
+  .reportHeroConclusion strong {
+    font-size: 23px;
+  }
+
+  .reportBody {
+    padding: 18px;
+  }
+
+  .reportTable {
+    min-width: 0;
+  }
+
+  .reportTable thead {
+    display: none;
+  }
+
+  .reportTable,
+  .reportTable tbody,
+  .reportTable tr,
+  .reportTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .reportTable tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .reportTable tr:last-child {
+    border-bottom: 0;
+  }
+
+  .reportTable td {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 0;
+  }
+
+  .reportTable td::before {
+    content: attr(data-label);
+    color: var(--text);
+    font-weight: 850;
   }
 
   .dialogActions {

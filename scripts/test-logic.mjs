@@ -20,6 +20,7 @@ import {
 import { buildComparisonAiPayload, buildComparisonDataset } from '../src/utils/comparisonAnalysis.js';
 import { requestComparisonAnalysis } from '../src/utils/comparisonOpenaiAnalysis.js';
 import { requestWorkshopAnalysis } from '../src/utils/openaiAnalysis.js';
+import { extractReportSignal } from '../src/components/report/reportMarkdownUtils.js';
 
 assert.equal(hasExternalModule({ META_EXTERNAL: ['특별히 없음'] }), false);
 assert.equal(hasExternalModule({ META_EXTERNAL: ['서비스/디자인'] }), true);
@@ -37,6 +38,16 @@ assert.equal(questions.find((question) => question.id === 'META_WORKSTREAM').max
 assert.equal(questions.find((question) => question.id === 'A01').allowNA, undefined);
 assert.equal(questions.find((question) => question.id === 'B01').allowNA, true);
 assert.equal(normalizeResponseValue('CHOICE02', '의사결정자와 결정 방식 정리'), '최종 결정하는 사람과 결정 방식 정리');
+assert.deepEqual(extractReportSignal('**한 문장 결론:** "비교 흐름이 더 선명해졌습니다."'), {
+  kind: 'conclusion',
+  label: '한 문장 결론',
+  text: '비교 흐름이 더 선명해졌습니다.',
+});
+assert.deepEqual(extractReportSignal('- **한문장 제안:** "작게 합의하세요."'), {
+  kind: 'suggestion',
+  label: '한문장 제안',
+  text: '작게 합의하세요.',
+});
 assert.deepEqual(
   normalizeResponseValue('META_WORKSTREAM', ['AI Agent', '공통 검색/AI 플랫폼/인프라성 작업']),
   ['AI Agent', '공통 검색, AI 기반 작업, 인프라 관련 작업'],

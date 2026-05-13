@@ -11,6 +11,8 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Button from '../components/common/Button';
 import { AppShell, PageHeader, Panel } from '../components/common/Layout';
+import MarkdownReport from '../components/report/MarkdownReport';
+import { extractReportSignal } from '../components/report/reportMarkdownUtils';
 import { QUESTION_VERSION, answerableQuestions, roleOptions, surveyInfo } from '../data/questions';
 import {
   analysisService,
@@ -401,84 +403,6 @@ function QuestionStatRow({ stat }) {
   return null;
 }
 
-function renderInline(text, keyPrefix) {
-  const parts = String(text || '').split(/(\*\*[^*]+\*\*|`[^`]+`)/g).filter(Boolean);
-  return parts.map((part, index) => {
-    const key = `${keyPrefix}-${index}`;
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={key}>{part.slice(2, -2)}</strong>;
-    }
-    if (part.startsWith('`') && part.endsWith('`')) {
-      return <code key={key}>{part.slice(1, -1)}</code>;
-    }
-    return part;
-  });
-}
-
-function tableCells(line) {
-  return line
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
-}
-
-function isTableSeparator(line) {
-  return tableCells(line).every((cell) => /^:?-{3,}:?$/.test(cell));
-}
-
-function cleanSignalText(text) {
-  return String(text || '')
-    .trim()
-    .replace(/^\*\*\s*/, '')
-    .replace(/\s*\*\*$/, '')
-    .replace(/^["'“”]+/, '')
-    .replace(/["'“”]+$/, '')
-    .trim();
-}
-
-function extractReportSignal(line) {
-  const normalized = String(line || '')
-    .replace(/^[-*]\s+/, '')
-    .replace(/^\d+\.\s+/, '')
-    .trim()
-    .replace(/^\*\*/, '');
-  const match = normalized.match(/^(한\s*문장\s*결론|한문장\s*결론|한\s*문장\s*정리|한문장\s*정리|한\s*문장\s*제안|한문장\s*제안)\s*:\s*(.+)$/);
-  if (!match) return null;
-
-  const label = match[1].replace(/\s+/g, '');
-  const text = cleanSignalText(match[2]);
-  if (!text) return null;
-  if (label.includes('결론')) return { kind: 'conclusion', label: '한 문장 결론', text };
-  if (label.includes('제안')) return { kind: 'suggestion', label: '한문장 제안', text };
-  return { kind: 'summary', label: '한문장 정리', text };
-}
-
-function ReportHeroConclusion({ signal }) {
-  if (!signal) return null;
-  return (
-    <div className={styles.reportHeroConclusion}>
-      <span>{signal.label}</span>
-      <strong>“{signal.text}”</strong>
-    </div>
-  );
-}
-
-function ReportCallout({ signal }) {
-  const kindClass = {
-    conclusion: styles.reportCalloutConclusion,
-    summary: styles.reportCalloutSummary,
-    suggestion: styles.reportCalloutSuggestion,
-  }[signal.kind];
-
-  return (
-    <div className={`${styles.reportCallout} ${kindClass}`}>
-      <span>{signal.label}</span>
-      <strong>“{signal.text}”</strong>
-    </div>
-  );
-}
-
 function stripNarrativeReportChrome(text, analysisType) {
   if (analysisType !== 'letter' && analysisType !== 'roleMessages') return text;
   const title = analysisType === 'letter' ? '한 장의 편지' : '직무별 메시지';
@@ -493,172 +417,6 @@ function stripNarrativeReportChrome(text, analysisType) {
   if (!cleaned) return `# ${title}`;
   if (/^#\s+/.test(cleaned)) return cleaned;
   return `# ${title}\n\n${cleaned}`;
-}
-
-function parseRoleMessageQuote(quote) {
-  const normalized = String(quote || '').replace(/\s*\n\s*/g, ' ').trim();
-  const match = normalized.match(/^\*\*([^*]+?)(?::)?\*\*\s*:?\s*["“]?([\s\S]*?)["”]?$/);
-  if (!match) return null;
-  const title = match[1].replace(/[:：]\s*$/, '').trim();
-  const message = match[2].trim();
-  if (!title.endsWith('께') || !message) return null;
-  return { title, message };
-}
-
-function RoleMessageQuote({ title, message, quoteKey }) {
-  return (
-    <div className={styles.roleMessageCard}>
-      <div className={styles.roleMessageRecipient}>{renderInline(title, `${quoteKey}-title`)}</div>
-      <p className={styles.roleMessageText}>{renderInline(message, `${quoteKey}-message`)}</p>
-    </div>
-  );
-}
-
-function MarkdownReport({ text }) {
-  const lines = String(text || '').split('\n');
-  const nodes = [];
-  let list = [];
-  let table = [];
-  let quoteBlock = [];
-  const heroConclusion = lines.map(extractReportSignal).find((signal) => signal?.kind === 'conclusion');
-  let skippedHeroConclusion = false;
-
-  const flushList = () => {
-    if (!list.length) return;
-    nodes.push(
-      <ul key={`list-${nodes.length}`} className={styles.reportList}>
-        {list.map((item, index) => <li key={`${item}-${index}`}>{renderInline(item, `list-${nodes.length}-${index}`)}</li>)}
-      </ul>,
-    );
-    list = [];
-  };
-
-  const flushQuote = () => {
-    if (!quoteBlock.length) return;
-    const quote = quoteBlock.join('\n').trim();
-    const roleMessage = parseRoleMessageQuote(quote);
-    if (roleMessage) {
-      nodes.push(
-        <RoleMessageQuote
-          key={`role-quote-${nodes.length}`}
-          quoteKey={`role-quote-${nodes.length}`}
-          title={roleMessage.title}
-          message={roleMessage.message}
-        />,
-      );
-    } else if (quote) {
-      nodes.push(
-        <blockquote key={`quote-${nodes.length}`} className={styles.reportQuote}>
-          {renderInline(quote, `quote-${nodes.length}`)}
-        </blockquote>,
-      );
-    }
-    quoteBlock = [];
-  };
-
-  const flushTable = () => {
-    if (!table.length) return;
-    const [header, ...rows] = table.filter((row) => !isTableSeparator(row));
-    if (!header) {
-      table = [];
-      return;
-    }
-    const headerCells = tableCells(header);
-    nodes.push(
-      <div key={`table-${nodes.length}`} className={styles.reportTableWrap}>
-        <table className={styles.reportTable}>
-          <thead>
-            <tr>
-              {headerCells.map((cell, cellIndex) => (
-                <th key={`${cell}-${cellIndex}`}>{renderInline(cell, `th-${cellIndex}`)}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={`${row}-${rowIndex}`}>
-                {tableCells(row).map((cell, cellIndex) => (
-                  <td key={`${cell}-${cellIndex}`} data-label={headerCells[cellIndex] || ''}>
-                    {renderInline(cell, `td-${rowIndex}-${cellIndex}`)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>,
-    );
-    table = [];
-  };
-
-  lines.forEach((rawLine, index) => {
-    const line = rawLine.trim();
-    if (!line) {
-      flushList();
-      flushTable();
-      flushQuote();
-      return;
-    }
-    if (line.startsWith('|') && line.endsWith('|')) {
-      flushList();
-      flushQuote();
-      table.push(line);
-      return;
-    }
-    flushTable();
-    if (line.startsWith('>')) {
-      flushList();
-      const quote = line.replace(/^>\s?/, '').trim();
-      if (quote) quoteBlock.push(quote);
-      return;
-    }
-    flushQuote();
-    const signal = extractReportSignal(line);
-    if (signal) {
-      flushList();
-      if (signal.kind === 'conclusion' && !skippedHeroConclusion) {
-        skippedHeroConclusion = true;
-        return;
-      }
-      nodes.push(<ReportCallout key={`signal-${index}`} signal={signal} />);
-      return;
-    }
-    if (line.startsWith('# ')) {
-      flushList();
-      nodes.push(<h2 key={index}>{line.replace(/^#\s*/, '')}</h2>);
-      return;
-    }
-    if (line.startsWith('## ')) {
-      flushList();
-      nodes.push(<h3 key={index}>{line.replace(/^##\s*/, '')}</h3>);
-      return;
-    }
-    if (line.startsWith('### ')) {
-      flushList();
-      nodes.push(<h4 key={index}>{line.replace(/^###\s*/, '')}</h4>);
-      return;
-    }
-    if (/^[-*]\s+/.test(line)) {
-      list.push(line.replace(/^[-*]\s+/, ''));
-      return;
-    }
-    if (/^\d+\.\s+/.test(line)) {
-      list.push(line.replace(/^\d+\.\s+/, ''));
-      return;
-    }
-    flushList();
-    nodes.push(<p key={index}>{renderInline(line, `p-${index}`)}</p>);
-  });
-
-  flushList();
-  flushTable();
-  flushQuote();
-  return (
-    <article className={styles.reportBody}>
-      <ReportHeroConclusion signal={heroConclusion} />
-      {nodes}
-    </article>
-  );
 }
 
 function filterPayloadQuestions(payload, predicate, options = {}) {
@@ -1257,7 +1015,7 @@ export default function Result() {
                 <span>생성 시각: {formatTime(activeReport.analyzedAt)}</span>
                 <span>응답자: {activeReport.inputSummary?.respondentCount ?? dashboard.respondentCount}</span>
               </div>
-              <MarkdownReport text={activeReportText} />
+              <MarkdownReport text={activeReportText} styles={styles} />
             </div>
           ) : (
             <div className={styles.emptyState}>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../components/common/Button';
 import { AppShell, PageHeader, Panel } from '../components/common/Layout';
+import MarkdownReport from '../components/report/MarkdownReport';
 import { analysisService, respondentService, responseService } from '../firebase/config';
 import { buildDashboardStats, filterCurrentSurveyData } from '../utils/analytics';
 import { buildComparisonAiPayload, buildComparisonDataset } from '../utils/comparisonAnalysis';
@@ -252,30 +253,6 @@ function TextChange({ comparison }) {
   );
 }
 
-function MarkdownReport({ text }) {
-  if (!text) {
-    return (
-      <Panel className={styles.emptyReport}>
-        아직 생성된 비교 리포트가 없습니다. 오른쪽 위의 생성 버튼으로 비교 리포트를 만들 수 있습니다.
-      </Panel>
-    );
-  }
-
-  return (
-    <article className={styles.markdownReport}>
-      {String(text).split('\n').map((line, index) => {
-        const key = `${index}-${line.slice(0, 12)}`;
-        if (/^#\s+/.test(line)) return <h2 key={key}>{line.replace(/^#\s+/, '')}</h2>;
-        if (/^##\s+/.test(line)) return <h3 key={key}>{line.replace(/^##\s+/, '')}</h3>;
-        if (/^-\s+/.test(line)) return <p key={key} className={styles.bullet}>• {line.replace(/^-\s+/, '')}</p>;
-        if (/^>\s+/.test(line)) return <blockquote key={key}>{line.replace(/^>\s+/, '')}</blockquote>;
-        if (!line.trim()) return <br key={key} />;
-        return <p key={key}>{line}</p>;
-      })}
-    </article>
-  );
-}
-
 const basicTabs = [
   ['overview', '개요'],
   ['matched', '문항 변화'],
@@ -422,7 +399,13 @@ export default function Comparison() {
                   : '아직 생성되지 않았습니다.'}
             </small>
           </Panel>
-          <MarkdownReport text={activeReport?.result} />
+          {activeReport?.result ? (
+            <MarkdownReport text={activeReport.result} styles={styles} />
+          ) : (
+            <Panel className={styles.emptyReport}>
+              아직 생성된 비교 리포트가 없습니다. 오른쪽 위의 생성 버튼으로 비교 리포트를 만들 수 있습니다.
+            </Panel>
+          )}
         </div>
       ) : null}
 
