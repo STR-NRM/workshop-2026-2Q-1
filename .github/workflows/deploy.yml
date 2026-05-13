@@ -2,9 +2,7 @@
 name: Deploy static content to Pages
 
 on:
-  # Run manually after GitHub Pages is enabled for this repository.
-  # The current private-repo plan may not support Pages until the repo
-  # is made public or the organization plan is adjusted.
+  # Run manually when the current survey version is ready for release.
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
