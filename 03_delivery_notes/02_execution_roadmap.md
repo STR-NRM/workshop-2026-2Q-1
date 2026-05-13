@@ -1,8 +1,8 @@
 # 설문 구현 및 워크샵 실행 로드맵
 
 - 최초 작성일자: 2026-05-12
-- 업데이트일자: 2026-05-12
-- 업데이트 내용: v1.1 팀원 중심 응답 대상, 제품별 책임 역할표, 어려운 용어 정리 반영.
+- 업데이트일자: 2026-05-13
+- 업데이트 내용: v1.2 GitHub Pages 정적 배포 기준으로 AI 분석 실행 방식을 단순화. Firebase Functions/Blaze 의존 제거.
 - 작성자: Codex
 - 적용 대상: 2026년 상반기 AI 사업부 워크샵 준비 및 후속 운영
 
@@ -57,8 +57,9 @@
 - 2025 4Q 데이터와 2026 2Q-1 데이터 경로를 분리한다.
 - 가능하면 새 Firebase 프로젝트를 사용한다.
 - 같은 Firebase를 쓰면 `/surveys/2026-2Q-1/...`처럼 버전 경로를 둔다.
-- OpenAI API 키는 브라우저에 직접 노출하지 않는다.
-- AI 분석은 결과 화면 버튼이 Firebase Cloud Function을 호출하고, 함수가 Functions secret의 OpenAI 키를 사용하는 구조로 실행한다.
+- OpenAI API 키는 소스, GitHub Actions secret, Firebase에 저장하지 않는다.
+- AI 분석은 결과 화면에서 진행자가 API key를 입력하고, 브라우저가 익명 집계 데이터를 OpenAI Responses API로 보내 생성한 뒤 Firebase에 저장한다.
+- 이 방식은 GitHub Pages 정적 배포와 Firebase Spark 플랜만으로 작동한다. 단, API key를 입력한 브라우저에서는 해당 요청에 key가 사용되므로 공개 단말이나 화면 공유 상황에서는 주의한다.
 - 결과/AI 분석 페이지는 팀 공유용으로 공개 조회한다. 응답 저장은 Anonymous Auth로 제한한다.
 
 ### 3.3 AI 분석 프롬프트

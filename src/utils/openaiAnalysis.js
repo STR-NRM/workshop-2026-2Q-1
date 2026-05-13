@@ -1,44 +1,11 @@
-import { initializeApp } from 'firebase-admin/app';
-import { getDatabase } from 'firebase-admin/database';
-import { defineSecret } from 'firebase-functions/params';
-import { onRequest } from 'firebase-functions/v2/https';
-import OpenAI from 'openai';
+const REPORT_VERSION = '2026-05-13-browser-analysis-v3-expert-report';
+const DEFAULT_MODEL = 'gpt-5.5';
+const DEFAULT_REASONING_EFFORT = 'high';
+const OPENAI_RESPONSES_URL = 'https://api.openai.com/v1/responses';
 
-const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
-const REGION = 'asia-southeast1';
-const DATABASE_URL =
-  process.env.FIREBASE_DATABASE_URL ||
-  'https://workshop-2026-2q-1-default-rtdb.asia-southeast1.firebasedatabase.app';
-const REPORT_VERSION = '2026-05-13-click-analysis-v2-expert-report';
-
-initializeApp({ databaseURL: DATABASE_URL });
-
-const allowedOrigins = [
-  'http://localhost:5174',
-  'http://localhost:5173',
-  'https://str-nrm.github.io',
-];
-
-function setCors(req, res) {
-  const origin = req.get('origin');
-  if (origin && isAllowedOrigin(origin)) {
-    res.set('Access-Control-Allow-Origin', origin);
-    res.set('Vary', 'Origin');
-  }
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-}
-
-function isAllowedOrigin(origin) {
-  return allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin);
-}
-
-function requirePayload(body) {
-  const payload = body && typeof body === 'object' ? body : null;
+function requirePayload(payload) {
   if (!payload?.survey?.id || !payload?.sample || !Array.isArray(payload?.questionStats)) {
-    const error = new Error('AI 분석에 필요한 설문 데이터가 부족합니다.');
-    error.status = 400;
-    throw error;
+    throw new Error('AI 분석에 필요한 설문 데이터가 부족합니다.');
   }
   return payload;
 }
@@ -103,72 +70,68 @@ function normalizeReport(text) {
 ${trimmed}`;
 }
 
-function outputText(response) {
-  if (response.output_text) return response.output_text;
-  return JSON.stringify(response.output ?? response, null, 2);
+function extractOutputText(body) {
+  if (typeof body?.output_text === 'string' && body.output_text.trim()) return body.output_text;
+
+  const output = Array.isArray(body?.output) ? body.output : [];
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+    for (const contentItem of content) {
+      if (typeof contentItem?.text === 'string' && contentItem.text.trim()) return contentItem.text;
+    }
+  }
+
+  const serialized = JSON.stringify(body?.output ?? body, null, 2);
+  if (serialized && serialized !== '{}') return serialized;
+  return '';
 }
 
-export const generateWorkshopAnalysis = onRequest(
-  {
-    region: REGION,
-    timeoutSeconds: 540,
-    memory: '1GiB',
-    secrets: [OPENAI_API_KEY],
-  },
-  async (req, res) => {
-    setCors(req, res);
-    if (req.method === 'OPTIONS') {
-      res.status(204).send('');
-      return;
-    }
-    if (req.method !== 'POST') {
-      res.status(405).json({ error: 'POST 요청만 지원합니다.' });
-      return;
-    }
-    const origin = req.get('origin');
-    if (origin && !isAllowedOrigin(origin)) {
-      res.status(403).json({ error: '허용되지 않은 출처의 AI 분석 요청입니다.' });
-      return;
-    }
+export async function requestWorkshopAnalysis({
+  apiKey,
+  payload,
+  model = DEFAULT_MODEL,
+  reasoningEffort = DEFAULT_REASONING_EFFORT,
+}) {
+  const normalizedApiKey = String(apiKey || '').trim();
+  if (!normalizedApiKey) {
+    throw new Error('OpenAI API key를 입력해야 AI 분석을 생성할 수 있습니다.');
+  }
 
-    try {
-      const payload = requirePayload(req.body);
-      const model = process.env.OPENAI_MODEL || 'gpt-5.5';
-      const reasoningEffort = process.env.OPENAI_REASONING_EFFORT || 'high';
-      const openai = new OpenAI({ apiKey: OPENAI_API_KEY.value() });
+  const validPayload = requirePayload(payload);
+  const response = await fetch(OPENAI_RESPONSES_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${normalizedApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      reasoning: { effort: reasoningEffort },
+      max_output_tokens: 12000,
+      input: buildPrompt(validPayload),
+    }),
+  });
 
-      const response = await openai.responses.create({
-        model,
-        reasoning: { effort: reasoningEffort },
-        input: buildPrompt(payload),
-      });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(body?.error?.message || `OpenAI 분석 요청이 실패했습니다. (${response.status})`);
+  }
 
-      const result = normalizeReport(outputText(response));
-      const analysis = {
-        result,
-        model,
-        reasoningEffort,
-        analyzedAt: Date.now(),
-        reportVersion: REPORT_VERSION,
-        generatedBy: {
-          origin: origin || null,
-        },
-        inputSummary: {
-          surveyId: payload.survey.id,
-          questionVersion: payload.survey.questionVersion || null,
-          respondentCount: payload.sample.respondentCount,
-          completedCount: payload.sample.completedCount,
-          questionCount: payload.questionStats.length,
-        },
-      };
-
-      await getDatabase().ref(`surveys/${payload.survey.id}/analysis/comprehensive`).set(analysis);
-      res.json({ ok: true, analysis });
-    } catch (err) {
-      console.error(err);
-      res.status(err.status || 500).json({
-        error: err.message || 'AI 분석 생성 중 오류가 발생했습니다.',
-      });
-    }
-  },
-);
+  return {
+    result: normalizeReport(extractOutputText(body)),
+    model,
+    reasoningEffort,
+    analyzedAt: Date.now(),
+    reportVersion: REPORT_VERSION,
+    generatedBy: {
+      mode: 'browser',
+    },
+    inputSummary: {
+      surveyId: validPayload.survey.id,
+      questionVersion: validPayload.survey.questionVersion || null,
+      respondentCount: validPayload.sample.respondentCount,
+      completedCount: validPayload.sample.completedCount,
+      questionCount: validPayload.questionStats.length,
+    },
+  };
+}

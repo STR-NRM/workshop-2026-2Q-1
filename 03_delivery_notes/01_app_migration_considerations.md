@@ -1,8 +1,8 @@
 # 기존 4Q 앱 기반 상반기 워크샵 앱 이전 고려사항
 
 - 최초 작성일자: 2026-05-11
-- 업데이트일자: 2026-05-12
-- 업데이트 내용: v1.3 팀원 중심 응답 대상 14명, 역할군 3개, 조건부 라우팅 반영.
+- 업데이트일자: 2026-05-13
+- 업데이트 내용: v1.4 GitHub Pages 정적 배포 기준 AI 분석 방식을 재판단. Firebase Functions 의존 제거.
 - 작성자: Codex
 - 적용 대상: 2026년 2Q-1 상반기 워크샵 설문 앱 구현
 
@@ -119,7 +119,7 @@ base: '/workshop-2026-2Q-1/'
 - AI/RAG 품질은 공통 핵심 축이 아니라 필요 시 엔지니어링/운영 분과 선택 토픽으로 취급.
 - 출력 형식에서 "스쿼드 4분기 회고" 제목 제거.
 
-### 3.5 OpenAI API 보안
+### 3.5 OpenAI API 보안과 Pages 배포
 
 기존 앱은 브라우저에서 OpenAI API 키를 직접 사용한다.
 
@@ -130,11 +130,11 @@ base: '/workshop-2026-2Q-1/'
 
 현실적 선택지:
 
-1. 브라우저 직접 호출은 구현이 빠르지만 키 노출 때문에 제외한다.
-2. 안전하게 운영하려면 Cloud Function, Vercel Serverless, Firebase Functions 같은 서버 프록시를 둔다.
-3. 상반기 앱은 Firebase Cloud Function을 사용해 결과 화면 버튼에서 분석을 생성한다.
+1. 작년 방식처럼 `VITE_OPENAI_API_KEY`를 빌드에 넣으면 클릭 한 번으로 분석되지만, 공개 Pages에서는 key가 번들에 노출된다.
+2. Firebase Functions 같은 서버 프록시는 key 보호에는 가장 좋지만, Spark 플랜에서 배포가 막혀 Blaze 전환이 필요할 수 있다.
+3. 현재 상반기 앱은 결과 화면에서 진행자가 API key를 입력하고 브라우저가 OpenAI Responses API를 직접 호출한다. 생성된 보고서만 Firebase에 저장한다.
 
-권장: OpenAI 키는 Firebase Functions secret에만 저장하고, 브라우저 번들/환경변수/GitHub에는 넣지 않는다.
+최종 판단: GitHub Pages 정적 배포와 단순 운영을 우선한다. 다만 key를 빌드 번들에 넣지 않기 위해 런타임 입력 방식을 사용한다. 설문 응답자는 별도 설정 없이 URL만 열면 되고, AI 분석을 생성하는 진행자만 API key를 입력한다.
 
 ## 4. 기존 앱에서 발견된 정리 대상
 

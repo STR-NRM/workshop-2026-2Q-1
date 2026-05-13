@@ -11,6 +11,7 @@ import {
   getChoiceStats,
   getScaleStats,
 } from '../src/utils/analytics.js';
+import { requestWorkshopAnalysis } from '../src/utils/openaiAnalysis.js';
 
 assert.equal(hasExternalModule({ META_EXTERNAL: ['특별히 없음'] }), false);
 assert.equal(hasExternalModule({ META_EXTERNAL: ['응답하지 않음'] }), false);
@@ -73,5 +74,36 @@ const dashboard = buildDashboardStats(
 assert.equal(dashboard.respondentCount, 2);
 assert.equal(dashboard.completedCount, 1);
 assert.ok(dashboard.questionStats.find((stat) => stat.question.id === 'A01').scale.average === 4);
+
+const aiPayload = {
+  survey: { id: '2026-2Q-1', questionVersion: 'test' },
+  sample: { respondentCount: 1, completedCount: 1 },
+  questionStats: [],
+};
+
+await assert.rejects(
+  () => requestWorkshopAnalysis({ apiKey: '', payload: aiPayload }),
+  /OpenAI API key/,
+);
+
+const originalFetch = globalThis.fetch;
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, 'https://api.openai.com/v1/responses');
+  assert.match(options.headers.Authorization, /^Bearer sk-test$/);
+  const body = JSON.parse(options.body);
+  assert.equal(body.model, 'gpt-5.5');
+  assert.equal(body.reasoning.effort, 'high');
+  assert.match(body.input, /# Executive Summary/);
+  return {
+    ok: true,
+    json: async () => ({ output_text: '# Executive Summary\n- 테스트 리포트' }),
+  };
+};
+
+const analysis = await requestWorkshopAnalysis({ apiKey: 'sk-test', payload: aiPayload });
+assert.equal(analysis.result, '# Executive Summary\n- 테스트 리포트');
+assert.equal(analysis.inputSummary.surveyId, '2026-2Q-1');
+assert.equal(analysis.generatedBy.mode, 'browser');
+globalThis.fetch = originalFetch;
 
 console.log('Logic tests OK');

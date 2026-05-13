@@ -2,17 +2,17 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v1.5 결과 화면 무로그인 공개 조회, GitHub Pages Firebase mode, 전문가 검토형 AI 리포트 반영.
+- 업데이트 내용: v1.6 GitHub Pages 정적 배포 기준 AI 분석 단순화. Firebase Functions 의존 제거.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` production-ready 개발
 
 ## 0. 판단 과정 요약
 
-1. 4Q 앱을 그대로 쓰면 빠르지만, 4Q Firebase 프로젝트, 4분기 문구, 브라우저 OpenAI 호출이 남으면 실제 운영에서 실패한다.
+1. 4Q 앱을 그대로 쓰면 빠르지만, 4Q Firebase 프로젝트, 4분기 문구, 빌드 번들에 OpenAI key를 포함하는 방식이 남으면 실제 운영에서 실패한다.
 2. 따라서 첫 번째 기준은 기능 추가가 아니라 4Q 산물 제거와 데이터/보안 경계 재설정이다.
 3. Firebase/GitHub는 다른 세션과 충돌할 수 있으므로, 외부 상태 변경 전에는 현재 상태를 확인하고 이 경로의 작업물 기준으로만 변경한다.
 4. UI는 모바일 설문 완주성이 핵심이므로 복잡한 데스크톱 대시보드보다 응답자 흐름, 자동 저장, 라우팅 정확성, 결과 화면의 해석 가능성을 우선한다.
-5. OpenAI 분석은 브라우저에서 실행하지 않고, 결과 화면 버튼이 Firebase Cloud Function을 호출하고 함수가 OpenAI API와 Firebase Admin SDK를 사용하는 방식으로 구현한다.
+5. 지난해 레퍼런스 재확인 결과, 정적 Pages 앱에서 브라우저 OpenAI 호출만으로 AI 분석을 처리할 수 있었다. 다만 빌드 번들 key 노출을 피하기 위해 올해 앱은 결과 화면 런타임 key 입력 방식으로 구현한다.
 
 ## 1. 실행 TODO
 
@@ -22,7 +22,7 @@
 - [x] 4Q 레퍼런스 구조 확인
 - [x] target 폴더 상태 확인
 - [x] 4Q 앱 파일 복사
-- [x] 4Q 전용 산출물과 브라우저 OpenAI 호출 파일 제거 시작
+- [x] 4Q 전용 산출물과 `VITE_OPENAI_API_KEY` 기반 분석 파일 제거 시작
 - [x] `rg`로 4Q stale 문자열 반복 검사
 - [x] 문서 등록부에 구현 TODO 등록
 
@@ -66,7 +66,8 @@
 - [x] CSV/JSON export 구현
 - [x] AI 분석 결과 표시 구현
 - [x] 결과 화면 버튼 기반 AI 분석 생성 경로 구현
-- [x] Firebase Cloud Function 분석 프록시 작성
+- [x] 브라우저 OpenAI Responses API 분석 경로 작성
+- [x] AI 분석 결과 Firebase 저장 경로 작성
 - [x] Executive Summary로 시작하는 전문가 검토형 리포트 프롬프트 작성
 - [x] 긴 AI 리포트를 읽기 쉬운 섹션/목록/표 형태로 표시
 
@@ -111,14 +112,14 @@
 - GitHub Pages enablement: API 활성화 시도 결과 현재 private repo plan에서 Pages 미지원. 자동 push 트리거는 실패를 반복하지 않도록 제거하고 수동 실행으로 제한.
 - GitHub CLI: 로그인 완료. `repo`, `workflow` 권한 확인.
 - GitHub push/merge: `main`과 `codex/build-workshop-2026-2q-1`에 push 완료. 원격 기본 브랜치는 `main`.
-- Firebase Functions deploy: 프로젝트가 Blaze 플랜이 아니어서 Cloud Build API 활성화가 막혔고, 사용자 승인 없는 유료 전환은 진행하지 않음.
+- AI 분석: Firebase Functions를 제거하고 결과 화면에서 런타임 OpenAI key로 직접 생성한 뒤 Firebase에 저장하는 방식으로 단순화.
 - 로컬 QA: `VITE_USE_LOCAL_STORE=true`로 설문 완주와 결과 화면 확인 완료.
 - Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 Firebase mode 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
 - Browser plugin QA 참고: Codex 인앱 브라우저에서는 Firebase Auth 네트워크 오류가 발생했으나, 동일 설정이 Node SDK와 사용자의 Chrome에서는 정상 동작했다.
 
 ## 2. 완료 기준
 
-- 4Q Firebase 키, 4Q 문구, 4Q 프롬프트, 브라우저 OpenAI 호출이 app code에 남아 있지 않다.
+- 4Q Firebase 키, 4Q 문구, 4Q 프롬프트, 빌드 환경변수 OpenAI key embedding 방식이 app code에 남아 있지 않다.
 - 결과 화면 버튼 외의 별도 AI 분석 실행 경로가 사용자 플로우와 문서에 남아 있지 않다.
 - 설문 문항과 라우팅이 `07_final_question_bank_source_of_truth.md`와 일치한다.
 - Firebase 없이도 localStorage fallback으로 로컬 QA가 가능하다.

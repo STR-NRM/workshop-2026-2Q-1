@@ -20,12 +20,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const defaultAnalysisEndpoint = firebaseConfig.projectId
-  ? `https://asia-southeast1-${firebaseConfig.projectId}.cloudfunctions.net/generateWorkshopAnalysis`
-  : '';
-
-const analysisEndpoint = import.meta.env.VITE_AI_ANALYSIS_ENDPOINT || defaultAnalysisEndpoint;
-
 const hasFirebaseConfig = Boolean(
   firebaseConfig.apiKey &&
     firebaseConfig.authDomain &&
@@ -80,6 +74,14 @@ function getLocalUid() {
   return uid;
 }
 
+async function ensureAnonymousAuth() {
+  if (usingLocalStore) return null;
+  if (auth.currentUser?.isAnonymous) return auth.currentUser;
+  if (auth.currentUser && !auth.currentUser.isAnonymous) await signOut(auth);
+  const credential = await signInAnonymously(auth);
+  return credential.user;
+}
+
 export function getRuntimeMode() {
   return usingLocalStore ? 'local' : 'firebase';
 }
@@ -121,13 +123,8 @@ export const authService = {
       return { uid, respondent: store.respondents[uid] };
     }
 
-    if (auth.currentUser && !auth.currentUser.isAnonymous) {
-      await signOut(auth);
-    }
-    const credential = auth.currentUser?.isAnonymous
-      ? { user: auth.currentUser }
-      : await signInAnonymously(auth);
-    const uid = credential.user.uid;
+    const user = await ensureAnonymousAuth();
+    const uid = user.uid;
     const respondentRef = ref(database, `${namespace}/respondents/${uid}`);
     const snapshot = await get(respondentRef);
 
@@ -260,33 +257,17 @@ export const analysisService = {
     return snapshot.exists() ? snapshot.val() : null;
   },
 
-  async generateComprehensiveAnalysis(payload) {
+  async saveComprehensiveAnalysis(analysis) {
     if (usingLocalStore) {
-      throw new Error('AI 분석은 Firebase 연결 상태에서만 실행할 수 있습니다.');
-    }
-    if (!analysisEndpoint) {
-      throw new Error('AI 분석 함수 URL이 설정되어 있지 않습니다.');
-    }
-
-    let response;
-    try {
-      response = await fetch(analysisEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      throw new Error('AI 분석 함수에 연결할 수 없습니다. Firebase Functions 배포와 OPENAI_API_KEY secret 설정을 확인해주세요.');
-    }
-    const body = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(body.error || `AI 분석 요청이 실패했습니다. (${response.status})`);
+      const store = readLocalStore();
+      store.analysis.comprehensive = analysis;
+      writeLocalStore(store);
+      return analysis;
     }
 
-    return body.analysis;
+    await ensureAnonymousAuth();
+    await set(ref(database, `${namespace}/analysis/comprehensive`), analysis);
+    return analysis;
   },
 };
 

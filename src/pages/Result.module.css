@@ -224,9 +224,38 @@
 
 .reportHeader {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
   align-items: start;
   gap: 16px;
+}
+
+.reportControls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reportControls label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reportControls input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+.reportControls input:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 
 .analysis {

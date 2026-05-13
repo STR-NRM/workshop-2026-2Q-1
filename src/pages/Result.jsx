@@ -19,6 +19,7 @@ import {
   usingLocalStore,
 } from '../firebase/config';
 import { buildAiAnalysisPayload, buildDashboardStats, formatAverage, toPercent } from '../utils/analytics';
+import { requestWorkshopAnalysis } from '../utils/openaiAnalysis';
 import styles from './Result.module.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
@@ -274,6 +275,7 @@ export default function Result() {
   const [respondents, setRespondents] = useState({});
   const [analysis, setAnalysis] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [openAiKey, setOpenAiKey] = useState('');
 
   const dashboard = useMemo(
     () => buildDashboardStats(allResponses, respondents),
@@ -311,8 +313,9 @@ export default function Result() {
     setAnalysisRunning(true);
     try {
       const payload = buildAiAnalysisPayload(dashboard, allResponses, respondents);
-      const generated = await analysisService.generateComprehensiveAnalysis(payload);
-      setAnalysis(generated);
+      const generated = await requestWorkshopAnalysis({ apiKey: openAiKey, payload });
+      const saved = await analysisService.saveComprehensiveAnalysis(generated);
+      setAnalysis(saved);
     } catch (err) {
       console.error(err);
       setAnalysisError(err.message || 'AI 분석 생성에 실패했습니다.');
@@ -344,7 +347,7 @@ export default function Result() {
       },
     ],
   };
-  const canRunAnalysis = !usingLocalStore && !loading && dashboard.respondentCount > 0;
+  const canRunAnalysis = !loading && dashboard.respondentCount > 0;
 
   return (
     <AppShell wide>
@@ -518,11 +521,23 @@ export default function Result() {
             <SectionTitle
               eyebrow="AI Report"
               title="전문가 검토형 AI 분석 리포트"
-              description="현재 응답 집계 데이터를 서버측 AI 함수로 분석합니다. 모든 리포트는 Executive Summary로 시작하며, 조직·제품·개발 운영 관점의 실행 가능한 해석을 목표로 합니다."
+              description="현재 응답 집계 데이터를 OpenAI로 분석합니다. API key는 이 화면의 분석 요청에만 사용하고 Firebase나 GitHub에는 저장하지 않습니다."
             />
-            <Button onClick={runAnalysis} loading={analysisRunning} disabled={!canRunAnalysis}>
-              AI 분석 생성/갱신
-            </Button>
+            <div className={styles.reportControls}>
+              <label htmlFor="openai-key">OpenAI API key</label>
+              <input
+                id="openai-key"
+                type="password"
+                value={openAiKey}
+                onChange={(event) => setOpenAiKey(event.target.value)}
+                placeholder="sk-..."
+                autoComplete="off"
+                spellCheck="false"
+              />
+              <Button onClick={runAnalysis} loading={analysisRunning} disabled={!canRunAnalysis}>
+                AI 분석 생성/갱신
+              </Button>
+            </div>
           </div>
           {analysisError ? <p className={styles.error}>{analysisError}</p> : null}
           {analysis ? (

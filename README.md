@@ -7,7 +7,7 @@
 - React 19 + Vite
 - Firebase Authentication
 - Firebase Realtime Database
-- Firebase Cloud Functions AI analysis endpoint
+- Browser-run AI analysis from the result page
 - Mobile-first respondent survey
 - Shared result and report dashboard
 
@@ -53,19 +53,11 @@ npm run build
 
 ## AI Analysis
 
-AI analysis runs from the result page by clicking `AI 분석 생성/갱신`. The browser sends anonymized aggregate survey data to a Firebase Cloud Function, and the OpenAI key is kept only as a Firebase Functions secret. The report prompt requires an `Executive Summary` first and asks for a structured expert-review style report covering organization, product, engineering collaboration, risks, and 4-week experiments.
+AI analysis runs from the result page by clicking `AI 분석 생성/갱신`. The facilitator enters an OpenAI API key in the result page, the browser sends anonymized aggregate survey data to the OpenAI Responses API, and the generated report is saved to Firebase Realtime Database.
 
-```bash
-firebase functions:secrets:set OPENAI_API_KEY --project workshop-2026-2q-1
-firebase deploy --only functions --project workshop-2026-2q-1
-```
+This keeps GitHub Pages deployment simple and avoids Firebase Cloud Functions/Blaze requirements. The OpenAI key is not committed, not added to GitHub Actions secrets, and not saved to Firebase. It is used only for that browser request.
 
-Firebase Cloud Functions deployment may require the Firebase project to be on a billing-enabled plan.
-
-Optional function environment variables:
-
-- `OPENAI_MODEL`
-- `OPENAI_REASONING_EFFORT`
+The report prompt requires an `Executive Summary` first and asks for a structured expert-review style report covering organization, product, engineering collaboration, risks, and 4-week experiments.
 
 Do not commit `.env.local`, OpenAI keys, Firebase service account JSON files, or GitHub tokens.
 
