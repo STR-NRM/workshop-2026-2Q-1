@@ -174,9 +174,10 @@ assert.equal(analysis.generatedBy.mode, 'browser');
 globalThis.fetch = async (url, options) => {
   assert.equal(url, 'https://api.openai.com/v1/responses');
   const body = JSON.parse(options.body);
-  assert.match(body.input, /편지/);
-  assert.match(body.input, /직무별로 건네는 말/);
-  assert.match(body.input, /한 장으로 읽는 현재 이야기/);
+  assert.match(body.input, /한 장의 편지/);
+  assert.match(body.input, /오직 한 장의 편지만 담습니다/);
+  assert.doesNotMatch(body.input, /직무별 메시지는 반드시 blockquote/);
+  assert.doesNotMatch(body.input, /PM\/제품 담당 분들께/);
   assert.doesNotMatch(body.input, /Executive Summary 이후 모든 큰 섹션은 반드시 첫 부분에/);
   return {
     ok: true,
@@ -185,8 +186,30 @@ globalThis.fetch = async (url, options) => {
 };
 
 const letterAnalysis = await requestWorkshopAnalysis({ apiKey: 'sk-test', payload: aiPayload, analysisType: 'letter' });
-assert.equal(letterAnalysis.title, '편지');
+assert.equal(letterAnalysis.title, '한 장의 편지');
 assert.equal(letterAnalysis.analysisType, 'letter');
+
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, 'https://api.openai.com/v1/responses');
+  const body = JSON.parse(options.body);
+  assert.match(body.input, /직무별 메시지/);
+  assert.match(body.input, /PM\/제품 담당 분들께/);
+  assert.match(body.input, /프롬프트 엔지니어 분들께/);
+  assert.match(body.input, /AI 엔지니어링 분들께/);
+  assert.match(body.input, /프론트엔드 분들께/);
+  assert.match(body.input, /백엔드 분들께/);
+  assert.match(body.input, /blockquot/i);
+  assert.doesNotMatch(body.input, /한 장의 편지만 담습니다/);
+  assert.doesNotMatch(body.input, /Executive Summary 이후 모든 큰 섹션은 반드시 첫 부분에/);
+  return {
+    ok: true,
+    json: async () => ({ output_text: '# Executive Summary\n**한 문장 결론:** "직무별 메시지 샘플입니다."' }),
+  };
+};
+
+const roleMessagesAnalysis = await requestWorkshopAnalysis({ apiKey: 'sk-test', payload: aiPayload, analysisType: 'roleMessages' });
+assert.equal(roleMessagesAnalysis.title, '직무별 메시지');
+assert.equal(roleMessagesAnalysis.analysisType, 'roleMessages');
 globalThis.fetch = originalFetch;
 
 console.log('Logic tests OK');

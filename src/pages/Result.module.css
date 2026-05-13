@@ -2,11 +2,45 @@
   padding: 24px;
 }
 
-.actions {
+.toolbar {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 8px;
   margin-bottom: 18px;
+}
+
+.exportLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-top: 3px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.exportLinks button {
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.exportLinks button:hover,
+.exportLinks button:focus-visible {
+  color: var(--text);
+}
+
+.exportLinks button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
 }
 
 .metrics {
@@ -44,33 +78,42 @@
 .modeSwitch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 4px;
+  padding: 4px;
   margin-bottom: 10px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .modeSwitch button {
   display: flex;
-  min-height: 76px;
+  min-height: 66px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   gap: 6px;
-  padding: 15px 16px;
+  padding: 13px 15px;
   color: var(--text);
   text-align: left;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .modeSwitch button:hover {
-  border-color: var(--border-strong);
-  background: var(--surface-muted);
+  background: var(--surface);
+}
+
+.modeSwitch button:focus-visible,
+.tabs button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
 }
 
 .modeSwitch strong {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.35;
 }
 
@@ -83,7 +126,7 @@
 .modeSwitch .activeMode {
   color: var(--surface);
   background: var(--text);
-  border-color: var(--text);
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.16);
 }
 
 .modeSwitch .activeMode span {
@@ -897,7 +940,6 @@
 
 @media (max-width: 980px) {
   .metrics,
-  .modeSwitch,
   .grid,
   .signalCards,
   .overviewCards,
@@ -918,6 +960,23 @@
 }
 
 @media (max-width: 560px) {
+  .toolbar {
+    align-items: center;
+  }
+
+  .modeSwitch button {
+    min-height: 62px;
+    padding: 11px 10px;
+  }
+
+  .modeSwitch strong {
+    font-size: 15px;
+  }
+
+  .modeSwitch span {
+    font-size: 12px;
+  }
+
   .summaryHero strong {
     font-size: 22px;
   }

@@ -87,42 +87,80 @@ const analysisConfigs = {
   letter: {
     type: 'letter',
     tabId: 'ai-letter',
-    tabLabel: '편지',
-    eyebrow: '편지형 AI 분석',
-    title: '편지',
-    description: '모든 문항을 한 장으로 읽히는 편지형 분석으로 정리하고, 직무별로 건네는 메시지를 함께 보여줍니다.',
-    buttonLabel: '편지 생성/갱신',
+    tabLabel: '💌 한 장의 편지',
+    eyebrow: '한 장의 편지',
+    title: '💌 한 장의 편지',
+    description: '모든 문항을 한 장으로 읽히는 따뜻한 편지로 정리합니다. 직무별 메시지는 별도 탭에서 봅니다.',
+    buttonLabel: '한 장의 편지 생성/갱신',
+  },
+  roleMessages: {
+    type: 'roleMessages',
+    tabId: 'ai-role-messages',
+    tabLabel: '직무별 메시지',
+    eyebrow: '직무별 메시지',
+    title: '직무별 메시지',
+    description: '역할별 응답 신호를 바탕으로 각 직무의 팀원에게 건네는 짧고 따뜻한 메시지를 정리합니다.',
+    buttonLabel: '직무별 메시지 생성/갱신',
   },
   comprehensive: {
     type: 'comprehensive',
     tabId: 'ai-comprehensive',
-    tabLabel: 'AI 종합',
-    eyebrow: 'AI 종합 분석',
-    title: '종합 AI 리포트',
+    tabLabel: '종합',
+    eyebrow: '종합 분석',
+    title: '종합 리포트',
     description: '점수/선택 결과와 서술형 응답을 함께 보고 워크샵에서 논의할 주제와 4주 동안 해볼 작은 개선을 정리합니다.',
     buttonLabel: '종합 리포트 생성/갱신',
   },
   closedEnded: {
     type: 'closedEnded',
     tabId: 'ai-closed',
-    tabLabel: 'AI 선택형',
-    eyebrow: 'AI 선택형/척도 분석',
-    title: '선택형·척도형 문항 AI 리포트',
+    tabLabel: '선택형',
+    eyebrow: '선택형/척도 분석',
+    title: '선택형·척도형 문항 리포트',
     description: '1~5점 척도, 단일선택, 복수선택 결과만으로 숫자로 보이는 신호와 선택 분포를 해석합니다.',
     buttonLabel: '선택형 리포트 생성/갱신',
   },
   textByQuestion: {
     type: 'textByQuestion',
     tabId: 'ai-text',
-    tabLabel: 'AI 서술형',
-    eyebrow: 'AI 서술형 분석',
-    title: '서술형 문항별 AI 리포트',
+    tabLabel: '서술형',
+    eyebrow: '서술형 분석',
+    title: '서술형 문항별 리포트',
     description: '서술형 응답을 문항별로 나누어 반복 테마, 소수 의견, 토론 질문을 정리합니다.',
     buttonLabel: '서술형 리포트 생성/갱신',
   },
 };
 
 const allAnalysisTypes = Object.keys(analysisConfigs);
+const analysisReportCount = allAnalysisTypes.length;
+const roleMessageQuestionIds = new Set([
+  'META_ROLE',
+  'META_WORKSTREAM',
+  'META_EXTERNAL',
+  'META_CBT',
+  'CHOICE01',
+  'CHOICE01_OTHER',
+  'CHOICE02',
+  'CHOICE03',
+  'CHOICE04',
+  'CHOICE05',
+  'CHOICE06',
+  'CHOICE06_OTHER',
+  'NPS01',
+  'TEXT01',
+  'TEXT02',
+  'TEXT03',
+  'TEXT04',
+  'TEXT05',
+]);
+const roleMessageSectionKeywords = [
+  'E. 역할 간 협업 방식',
+  'G. 개발과 운영 환경',
+  'H. 지식 공유와 새 구성원 적응',
+  'I. 일하는 속도와 학습 문화',
+  '직무별 추가 문항',
+  '추가 문항',
+];
 const basicTabs = [
   ['overview', '요약'],
   ['signals', '먼저 볼 신호'],
@@ -580,11 +618,18 @@ function filterPayloadQuestions(payload, predicate, options = {}) {
   };
 }
 
+function isRoleMessageQuestion(stat) {
+  if (roleMessageQuestionIds.has(stat.id)) return true;
+  if (stat.role || stat.roles || stat.condition) return true;
+  return roleMessageSectionKeywords.some((keyword) => stat.section?.includes(keyword));
+}
+
 function payloadForAnalysis(type, payload) {
   if (type === 'closedEnded') return filterPayloadQuestions(payload, (stat) => stat.type !== 'longText');
   if (type === 'textByQuestion') {
     return filterPayloadQuestions(payload, (stat) => stat.type === 'longText', { includeAxisStats: false });
   }
+  if (type === 'roleMessages') return filterPayloadQuestions(payload, isRoleMessageQuestion);
   return payload;
 }
 
@@ -612,7 +657,7 @@ function analysisMatchesCurrentQuestions(analysis) {
       Object.entries(analysis.reports).filter(([, report]) => reportMatchesCurrentQuestions(report)),
     );
     if (!Object.keys(reports).length) return null;
-    const primary = reports.letter || reports.comprehensive || reports.closedEnded || reports.textByQuestion;
+    const primary = reports.letter || reports.roleMessages || reports.comprehensive || reports.closedEnded || reports.textByQuestion;
     return {
       ...analysis,
       result: primary?.result,
@@ -640,14 +685,14 @@ function mergeAnalysisReport(existingAnalysis, report) {
     ...previousReports,
     [report.analysisType]: report,
   };
-  const primary = reports.letter || reports.comprehensive || reports.closedEnded || reports.textByQuestion || report;
+  const primary = reports.letter || reports.roleMessages || reports.comprehensive || reports.closedEnded || reports.textByQuestion || report;
 
   return {
     result: primary.result,
     model: primary.model,
     reasoningEffort: primary.reasoningEffort,
     analyzedAt: Date.now(),
-    reportVersion: '2026-05-13-analysis-suite-v5-warmer-letter',
+    reportVersion: '2026-05-13-analysis-suite-v6-letter-role-split',
     inputSummary: primary.inputSummary,
     reports,
   };
@@ -725,7 +770,7 @@ export default function Result() {
     if (!canRunAnalysis) return;
 
     setAnalysisRunningTypes(allAnalysisTypes);
-    setAnalysisProgress('AI 리포트 4개를 동시에 만드는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.');
+    setAnalysisProgress(`리포트 ${analysisReportCount}개를 동시에 만드는 중입니다. 이 탭을 닫거나 새로고침하지 마세요.`);
     try {
       const payload = buildAiAnalysisPayload(dashboard, allResponses, respondents);
       const generatedReports = await Promise.all(
@@ -735,7 +780,7 @@ export default function Result() {
           analysisType,
         })),
       );
-      setAnalysisProgress('AI 리포트 4개를 저장하는 중입니다.');
+      setAnalysisProgress(`리포트 ${analysisReportCount}개를 저장하는 중입니다.`);
       const latestAnalysis = await analysisService.getComprehensiveAnalysis();
       const nextAnalysis = generatedReports.reduce(
         (currentAnalysis, report) => mergeAnalysisReport(currentAnalysis, report),
@@ -745,7 +790,7 @@ export default function Result() {
       setAnalysis(saved);
     } catch (err) {
       console.error(err);
-      setAnalysisError(err.message || 'AI 리포트를 만들지 못했습니다.');
+      setAnalysisError(err.message || '리포트를 만들지 못했습니다.');
     } finally {
       setAnalysisRunningTypes([]);
       setAnalysisProgress('');
@@ -800,10 +845,13 @@ export default function Result() {
         }
       />
 
-      <div className={styles.actions}>
+      <div className={styles.toolbar}>
         <Button variant="secondary" onClick={loadData} loading={loading}>새로고침</Button>
-        <Button variant="ghost" onClick={exportCsv}>Excel용 CSV 내보내기</Button>
-        <Button variant="ghost" onClick={exportJson}>JSON 내보내기</Button>
+        <div className={styles.exportLinks} aria-label="결과 데이터 내보내기">
+          <button type="button" onClick={exportCsv}>Excel CSV</button>
+          <span aria-hidden="true">·</span>
+          <button type="button" onClick={exportJson}>JSON</button>
+        </div>
       </div>
       {dataError ? <p className={styles.error}>{dataError}</p> : null}
 
@@ -811,7 +859,7 @@ export default function Result() {
         <Metric label="응답 시작" value={`${dashboard.respondentCount}명`} hint="설문을 시작한 인원" />
         <Metric label="완료" value={`${dashboard.completedCount}명`} hint="최종 제출 기준" />
         <Metric label="전체 문항" value={`${answerableQuestions.length}개`} hint="직무별/추가 문항 포함" />
-        <Metric label="AI 리포트" value={analysis ? '생성됨' : '미생성'} hint="한 번에 4개 리포트 생성" />
+        <Metric label="분석 리포트" value={analysis ? '생성됨' : '미생성'} hint={`한 번에 ${analysisReportCount}개 리포트 생성`} />
       </div>
 
       <div className={styles.modeSwitch} role="group" aria-label="결과 화면 구분">
@@ -829,13 +877,13 @@ export default function Result() {
           onClick={() => changeResultMode('ai')}
         >
           <strong>AI 분석</strong>
-          <span>편지, 종합 리포트, 선택형/서술형 리포트를 따로 봅니다.</span>
+          <span>편지, 직무별 메시지, 종합·선택형·서술형 리포트를 따로 봅니다.</span>
         </button>
       </div>
 
       <div className={styles.modeGuide}>
         {activeResultMode === 'ai'
-          ? 'AI 분석은 해석을 돕는 보조 자료입니다. 편지를 먼저 읽고, 필요하면 종합·선택형·서술형 리포트로 근거를 확인하세요.'
+          ? 'AI 분석은 해석을 돕는 보조 자료입니다. 한 장의 편지를 먼저 읽고, 직무별 메시지와 종합·선택형·서술형 리포트로 근거를 확인하세요.'
           : '기본 결과는 응답을 그대로 집계한 화면입니다. 먼저 숫자와 원문 신호를 확인한 뒤, AI 분석에서 해석을 보완하세요.'}
       </div>
 
@@ -1017,7 +1065,7 @@ export default function Result() {
                 {activeAnalysisConfig.buttonLabel}
               </Button>
               <small className={styles.controlHelp}>
-                어떤 AI 리포트 탭에서 누르더라도 4개 리포트가 동시에 만들어지고 각 탭에 저장됩니다.
+                어떤 AI 분석 탭에서 누르더라도 {analysisReportCount}개 리포트가 동시에 만들어지고 각 탭에 저장됩니다.
               </small>
             </div>
           </div>
@@ -1053,7 +1101,7 @@ export default function Result() {
           ) : (
             <div className={styles.emptyState}>
               <strong>아직 이 리포트는 생성되지 않았습니다.</strong>
-              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 4개 AI 리포트가 동시에 만들어지고, 이 탭에는 해당 리포트가 표시됩니다.</span>
+              <span>{activeAnalysisConfig.buttonLabel} 버튼을 누르면 {analysisReportCount}개 리포트가 동시에 만들어지고, 이 탭에는 해당 리포트가 표시됩니다.</span>
             </div>
           )}
         </Panel>
