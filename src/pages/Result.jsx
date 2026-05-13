@@ -645,7 +645,7 @@ function payloadForAnalysis(type, payload) {
   if (type === 'textByQuestion') {
     return filterPayloadQuestions(payload, (stat) => stat.type === 'longText', { includeAxisStats: false });
   }
-  if (type === 'roleMessages') return filterPayloadQuestions(payload, isRoleMessageQuestion);
+  if (type === 'roleMessages') return filterPayloadQuestions(payload, isRoleMessageQuestion, { includeAxisStats: false });
   return payload;
 }
 
