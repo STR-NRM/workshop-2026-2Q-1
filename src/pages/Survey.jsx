@@ -26,6 +26,22 @@ function validationText(question) {
   return '응답을 선택해주세요.';
 }
 
+function pruneHiddenResponses(nextResponses) {
+  const visibleIds = new Set(getVisibleQuestions(nextResponses).map((question) => question.id));
+  const pruned = {};
+  const hiddenIds = [];
+
+  Object.entries(nextResponses).forEach(([questionId, value]) => {
+    if (visibleIds.has(questionId)) {
+      pruned[questionId] = value;
+    } else {
+      hiddenIds.push(questionId);
+    }
+  });
+
+  return { hiddenIds, pruned };
+}
+
 export default function Survey() {
   const navigate = useNavigate();
   const [uid, setUid] = useState('');
@@ -53,10 +69,15 @@ export default function Survey() {
         const saved = await responseService.getAllResponses(session.uid);
         if (!alive) return;
         const values = toValueMap(saved);
+        const { hiddenIds, pruned } = pruneHiddenResponses(values);
         setUid(session.uid);
-        setResponses(values);
+        setResponses(pruned);
 
-        const initialVisible = getVisibleQuestions(values);
+        if (hiddenIds.length) {
+          await Promise.all(hiddenIds.map((questionId) => responseService.deleteResponse(session.uid, questionId)));
+        }
+
+        const initialVisible = getVisibleQuestions(pruned);
         const savedQuestionId = session.respondent?.currentQuestionId;
         const savedIndex = savedQuestionId
           ? initialVisible.findIndex((question) => question.id === savedQuestionId)
@@ -112,9 +133,14 @@ export default function Survey() {
   const handleChange = async (value) => {
     if (!currentQuestion) return;
     setValidation('');
-    setResponses((prev) => ({ ...prev, [currentQuestion.id]: value }));
+    const nextResponses = { ...responses, [currentQuestion.id]: value };
+    const { hiddenIds, pruned } = pruneHiddenResponses(nextResponses);
+    setResponses(pruned);
     if (currentQuestion.type !== 'longText') {
       await persist(currentQuestion, value);
+    }
+    if (hiddenIds.length && uid) {
+      await Promise.all(hiddenIds.map((questionId) => responseService.deleteResponse(uid, questionId)));
     }
   };
 

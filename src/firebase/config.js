@@ -5,7 +5,7 @@ import {
   signInAnonymously,
   signOut,
 } from 'firebase/auth';
-import { get, getDatabase, onValue, ref, set, update } from 'firebase/database';
+import { get, getDatabase, onValue, ref, remove, set, update } from 'firebase/database';
 import { QUESTION_VERSION, SURVEY_ID } from '../data/questions';
 
 const namespace = `surveys/${SURVEY_ID}`;
@@ -225,6 +225,19 @@ export const responseService = {
 
     await set(ref(database, `${namespace}/responses/${uid}/${question.id}`), payload);
     return payload;
+  },
+
+  async deleteResponse(uid, questionId) {
+    if (usingLocalStore) {
+      const store = readLocalStore();
+      if (store.responses[uid]) {
+        delete store.responses[uid][questionId];
+      }
+      writeLocalStore(store);
+      return;
+    }
+
+    await remove(ref(database, `${namespace}/responses/${uid}/${questionId}`));
   },
 
   async getAllResponses(uid) {

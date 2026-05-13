@@ -1,5 +1,5 @@
 export const SURVEY_ID = '2026-2Q-1';
-export const QUESTION_VERSION = '2026-05-13-v1.3';
+export const QUESTION_VERSION = '2026-05-13-v1.4';
 
 export const surveyInfo = {
   title: '2026 상반기 AI 사업부 일하는 방식 점검 설문',
@@ -27,6 +27,15 @@ export const roleOptions = [
 ];
 
 export const externalExcludedOptions = ['특별히 없음'];
+
+export const roleGroups = {
+  product: ['제품/PM/프롬프트'],
+  ai: ['AI 엔지니어링'],
+  web: ['웹 개발(프론트/백엔드)'],
+  engineering: ['AI 엔지니어링', '웹 개발(프론트/백엔드)'],
+  productAi: ['제품/PM/프롬프트', 'AI 엔지니어링'],
+  aiWeb: ['AI 엔지니어링', '웹 개발(프론트/백엔드)'],
+};
 
 const q = (item) => ({
   required: true,
@@ -152,11 +161,11 @@ export const questions = [
   scale('D05', 'D. 결정 방식과 업무 집중', '결정 지연 해소', '결정이 늦어질 때 어디에서 막혔는지 확인하고 풀 수 있다.', '지연이 생겼을 때 원인과 다음 행동이 드러나는지 기준으로 답해주세요.', 'decision-latency'),
   scale('D06', 'D. 결정 방식과 업무 집중', '여러 일을 동시에 하는 문제 관리', '동시에 진행 중인 일이 너무 많아 중요한 일에 집중하기 어렵다는 문제가 관리되고 있다.', '업무량의 절대 크기보다 여러 일을 오가느라 집중이 깨지는 문제가 관리되는지 봅니다.', 'work-in-progress'),
 
-  scale('E01', 'E. 역할 간 협업 방식', 'PM/프롬프트와 AI 개발 간 기대 결과', 'PM/프롬프트와 AI 엔지니어 사이에서 기대하는 결과물과 제약이 명확히 합의된다.', '프롬프트, 검색, 평가, 응답 품질 기대치가 서로 다르게 해석되지 않는지 봅니다.', 'pm-ai-interface'),
-  scale('E02', 'E. 역할 간 협업 방식', 'AI와 백엔드 사이의 합의', 'AI 엔지니어와 백엔드 사이에서 데이터, API, 검색/AI 처리 흐름의 합의가 명확하다.', '입력/출력, 실패 처리, 데이터 흐름, 책임 범위가 필요한 만큼 정의되는지 기준으로 답해주세요.', 'ai-be-interface'),
-  scale('E03', 'E. 역할 간 협업 방식', '백엔드와 프론트엔드 구현 합의', '백엔드와 프론트엔드 사이에서 API, 상태, 에러, 로딩, 권한, 예외 케이스가 충분히 정의된다.', '화면 구현 중 뒤늦게 확인되는 요소가 반복되는지 떠올려 답해주세요.', 'web-interface'),
-  scale('E04', 'E. 역할 간 협업 방식', '디자인과 사용 경험 조기 반영', '디자인과 사용 경험 관점이 기능 후반이 아니라 문제 정의와 설계 초기에 반영된다.', '디자인 산출물 자체보다 사용자가 겪을 경험이 너무 늦게 검토되지 않는지 봅니다.', 'ux-collaboration', { allowNA: true }),
-  scale('E05', 'E. 역할 간 협업 방식', '인프라/운영 조기 확인', '인프라/운영 관련 제약은 일정 후반이 아니라 충분히 이른 시점에 확인된다.', '배포, 성능, 비용, 보안, 모니터링 같은 제약이 늦게 드러나는지 기준으로 답해주세요.', 'infra-collaboration', { allowNA: true }),
+  scale('E01', 'E. 역할 간 협업 방식', 'PM/프롬프트와 AI 개발 간 기대 결과', 'PM/프롬프트와 AI 엔지니어 사이에서 기대하는 결과물과 제약이 명확히 합의된다.', '프롬프트, 검색, 평가, 응답 품질 기대치가 서로 다르게 해석되지 않는지 봅니다.', 'pm-ai-interface', { roles: roleGroups.productAi }),
+  scale('E02', 'E. 역할 간 협업 방식', 'AI와 백엔드 사이의 합의', 'AI 엔지니어와 백엔드 사이에서 데이터, API, 검색/AI 처리 흐름의 합의가 명확하다.', '입력/출력, 실패 처리, 데이터 흐름, 책임 범위가 필요한 만큼 정의되는지 기준으로 답해주세요.', 'ai-be-interface', { roles: roleGroups.aiWeb, allowNA: true }),
+  scale('E03', 'E. 역할 간 협업 방식', '백엔드와 프론트엔드 구현 합의', '백엔드와 프론트엔드 사이에서 API, 상태, 에러, 로딩, 권한, 예외 케이스가 충분히 정의된다.', '화면 구현 중 뒤늦게 확인되는 요소가 반복되는지 떠올려 답해주세요.', 'web-interface', { roles: roleGroups.web }),
+  scale('E04', 'E. 역할 간 협업 방식', '디자인과 사용 경험 조기 반영', '디자인과 사용 경험 관점이 기능 후반이 아니라 문제 정의와 설계 초기에 반영된다.', '서비스/디자인과 실제로 협업한 경험을 기준으로 답해주세요. 직접 겪지 않았다면 이 문항은 표시되지 않습니다.', 'ux-collaboration', { externalOptions: ['서비스/디자인'], allowNA: true }),
+  scale('E05', 'E. 역할 간 협업 방식', '인프라/운영 조기 확인', '인프라/운영 관련 제약은 일정 후반이 아니라 충분히 이른 시점에 확인된다.', '개발운영/인프라와 실제로 협업한 경험을 기준으로 답해주세요. 배포, 성능, 비용, 보안, 모니터링 같은 제약을 떠올리면 됩니다.', 'infra-collaboration', { externalOptions: ['개발운영/인프라'], allowNA: true }),
   scale('E06', 'E. 역할 간 협업 방식', '구조와 일하는 방식부터 보기', '직군 간 이슈가 생겼을 때 책임 공방보다 구조와 일하는 방식의 문제를 먼저 본다.', '개인의 잘잘못보다 재발을 줄이는 구조를 논의하는지 기준으로 답해주세요.', 'blameless-collaboration'),
 
   scale('F01', 'F. 제품별 운영 방식 관리', '운영 제품과 실험 제품의 차이', '운영 중인 제품과 CBT(사전 테스트)/실험 단계 제품의 실행 방식 차이를 팀이 이해하고 있다.', '정식 운영 제품과 실험 제품에 같은 기준을 적용해야 한다는 뜻이 아닙니다. 차이가 인식되는지 봅니다.', 'product-maturity'),
@@ -165,11 +174,11 @@ export const questions = [
   scale('F04', 'F. 제품별 운영 방식 관리', '정식 서비스로 넘길 기준', 'CBT(사전 테스트)/실험 단계 서비스가 정식 제품으로 넘어가기 위한 기준이 대체로 명확하다.', '이용, 품질, 고객 피드백, 운영 가능성 등 정식 서비스 판단 기준이 있는지 기준으로 답해주세요.', 'productization'),
   scale('F05', 'F. 제품별 운영 방식 관리', '제품 간 배운 점 공유', '각 제품에서 얻은 배운 점과 실패 사례가 다른 제품에도 재사용될 수 있게 공유된다.', '회고, 문서, 회의, 사례 공유 등 어떤 방식이든 배운 점이 제품 간 이동하는지 봅니다.', 'learning-transfer'),
 
-  scale('G01', 'G. 개발과 운영 환경', '문제 확인에 필요한 기록 접근', '개발자가 필요한 로그, 모니터링, 재현 정보에 접근해 문제를 빠르게 파악할 수 있다.', '장애나 품질 문제가 있을 때 원인 파악에 필요한 정보를 충분히 볼 수 있는지 답해주세요.', 'observability', { allowNA: true }),
-  scale('G02', 'G. 개발과 운영 환경', '배포 검증과 속도', '배포 과정은 필요한 검증을 포함하면서도 과도하게 느리지 않다.', '속도만 보지 말고, 검증과 실행 속도의 균형을 기준으로 답해주세요.', 'release-flow', { allowNA: true }),
-  scale('G03', 'G. 개발과 운영 환경', '변경 영향 범위', '공통 코드, 데이터 처리 흐름, 검색/AI 구성요소의 변경 영향 범위를 이해할 수 있다.', '변경 시 어떤 제품이나 기능에 영향을 줄지 추적 가능한지 기준으로 답해주세요.', 'change-impact', { allowNA: true }),
+  scale('G01', 'G. 개발과 운영 환경', '문제 확인에 필요한 기록 접근', '개발자가 필요한 로그, 모니터링, 재현 정보에 접근해 문제를 빠르게 파악할 수 있다.', '개발 또는 AI 구현 업무에서 장애나 품질 문제의 원인을 확인할 정보가 충분한지 답해주세요.', 'observability', { roles: roleGroups.engineering, allowNA: true }),
+  scale('G02', 'G. 개발과 운영 환경', '배포 검증과 속도', '배포 과정은 필요한 검증을 포함하면서도 과도하게 느리지 않다.', '배포, 검수, 롤백, 확인 절차가 속도와 안정성 사이에서 균형을 이루는지 기준으로 답해주세요.', 'release-flow', { roles: roleGroups.engineering, allowNA: true }),
+  scale('G03', 'G. 개발과 운영 환경', '변경 영향 범위', '공통 코드, 데이터 처리 흐름, 검색/AI 구성요소의 변경 영향 범위를 이해할 수 있다.', '기술 변경이 어떤 제품이나 기능에 영향을 줄지 개발 관점에서 추적 가능한지 답해주세요.', 'change-impact', { roles: roleGroups.engineering, allowNA: true }),
   scale('G04', 'G. 개발과 운영 환경', '나중에 손봐야 할 기술 문제와 사업 요구 균형', '나중에 손봐야 할 기술 문제와 단기 사업 요구 사이의 균형을 논의하고 결정할 수 있다.', '기술 문제를 항상 먼저 해결해야 한다는 뜻은 아닙니다. 당장 필요한 일과 나중에 문제가 될 수 있는 일 사이의 균형을 논의하고 결정하는지 봅니다.', 'tech-debt-balance'),
-  scale('G05', 'G. 개발과 운영 환경', '장애/품질 대응 경로', '장애나 품질 문제가 발생했을 때 대응 역할과 소통 경로가 명확하다.', '문제가 생긴 뒤 누가 무엇을 확인하고 누구에게 알릴지 대체로 분명한지 답해주세요.', 'incident-response', { allowNA: true }),
+  scale('G05', 'G. 개발과 운영 환경', '장애/품질 대응 경로', '장애나 품질 문제가 발생했을 때 대응 역할과 소통 경로가 명확하다.', '개발 또는 AI 구현 과정에서 문제가 생겼을 때 누가 무엇을 확인하고 누구에게 알릴지 분명한지 답해주세요.', 'incident-response', { roles: roleGroups.engineering, allowNA: true }),
 
   scale('H01', 'H. 지식 공유와 새 구성원 적응', '신규 합류 자료', '신규 합류자가 AI 사업부의 제품 구조와 일하는 방식을 이해하는 데 필요한 자료가 충분하다.', '신규 구성원이 혼자 모든 것을 찾아야 하는지, 기본 맥락을 얻을 자료가 있는지 기준으로 답해주세요.', 'onboarding'),
   scale('H02', 'H. 지식 공유와 새 구성원 적응', '제품과 고객을 이해하는 배경지식 접근', '콘텐츠, 데이터 출처, 검색 범위, 고객 맥락 등 제품 판단에 필요한 배경지식에 접근할 수 있다.', 'AI 제품 판단에 필요한 배경지식이 특정 사람만 알고 있는 지식에 머물지 않는지 봅니다.', 'domain-knowledge'),
@@ -287,7 +296,18 @@ export const questions = [
       'PM/프롬프트/요구사항',
       '개발/운영',
       'CBT(사전 테스트)/신규 실험',
+      '기타',
     ],
+  }),
+  q({
+    id: 'CHOICE06_OTHER',
+    type: 'longText',
+    section: '객관식 문항',
+    condition: 'choice06Other',
+    title: '기타 토론 주제',
+    question: '기타를 선택했다면, 워크샵에서 논의하고 싶은 주제를 적어주세요.',
+    helpText: '한두 문장으로 충분합니다. 논의하고 싶은 문제나 바꾸고 싶은 운영 방식을 적어주세요.',
+    minLength: 5,
   }),
 
   q({
@@ -453,6 +473,12 @@ export function hasExternalModule(responses) {
   return value.some((item) => !externalExcludedOptions.includes(item));
 }
 
+export function hasAnyExternalOption(responses, options = []) {
+  const value = responses?.META_EXTERNAL;
+  if (!Array.isArray(value) || value.length === 0) return false;
+  return value.some((item) => options.includes(item));
+}
+
 export function hasCbtModule(responses) {
   return responses?.META_CBT === '예';
 }
@@ -461,11 +487,20 @@ export function isQuestionVisible(question, responses = {}) {
   if (question.role) {
     return responses.META_ROLE === question.role;
   }
+  if (Array.isArray(question.roles)) {
+    return question.roles.includes(responses.META_ROLE);
+  }
+  if (Array.isArray(question.externalOptions)) {
+    return hasAnyExternalOption(responses, question.externalOptions);
+  }
   if (question.condition === 'external') {
     return hasExternalModule(responses);
   }
   if (question.condition === 'cbt') {
     return hasCbtModule(responses);
+  }
+  if (question.condition === 'choice06Other') {
+    return responses.CHOICE06 === '기타';
   }
   return true;
 }

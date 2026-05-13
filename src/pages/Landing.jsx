@@ -30,8 +30,8 @@ export default function Landing() {
       <div className={styles.content}>
         <PageHeader
           eyebrow={surveyInfo.organization}
-          title="같이 일하는 방식을 더 쉽게 만들기 위한 사전 설문"
-          description="이번 워크샵에서 막연한 이야기가 아니라, 실제 업무에서 어디가 막히고 무엇부터 바꾸면 좋을지 함께 확인하기 위한 설문입니다."
+          title="워크샵에서 바꿀 일을 찾기 위한 사전 설문"
+          description="최근 업무에서 어디가 막히는지, 4주 안에 무엇부터 바꾸면 좋을지 확인합니다."
           meta={
             <>
               <span>{surveyInfo.estimatedTime}</span>
@@ -44,21 +44,21 @@ export default function Landing() {
         <Panel className={styles.panel}>
           <section className={styles.heroNote}>
             <span>무엇을 보려고 하나요?</span>
-            <strong>일을 더 잘 굴러가게 만드는 작은 합의점을 찾습니다.</strong>
+            <strong>막히는 지점과 먼저 바꿀 일을 고릅니다.</strong>
             <p>
-              제품 우선순위, 요구사항, 결정 방식, 협업, 새 구성원 적응처럼 매일의 실행에 영향을 주는 부분을
-              확인합니다. 결과는 워크샵에서 4주 안에 해볼 수 있는 작은 개선을 고르는 데 사용합니다.
+              제품 우선순위, 요구사항, 결정 방식, 협업처럼 매일의 실행에 영향을 주는 부분을 봅니다.
+              결과는 워크샵에서 바로 논의할 주제를 고르는 데 사용합니다.
             </p>
           </section>
 
           <div className={styles.focusGrid}>
             <div>
               <strong>어디서 막히는지</strong>
-              <span>개인 탓이 아니라 일이 반복해서 막히는 지점과 정보 흐름을 봅니다.</span>
+              <span>개인 탓이 아니라 일이 반복해서 멈추는 지점을 봅니다.</span>
             </div>
             <div>
               <strong>어디서 경험이 갈리는지</strong>
-              <span>역할, 제품, 함께 일하는 팀에 따라 다르게 느끼는 지점을 봅니다.</span>
+              <span>역할, 제품, 함께 일한 팀에 따라 다르게 느끼는 지점을 봅니다.</span>
             </div>
             <div>
               <strong>무엇부터 바꿀지</strong>
@@ -69,19 +69,19 @@ export default function Landing() {
           <section className={styles.notice}>
             <h2>응답 기준</h2>
             <p>
-              최근 6주 동안 실제로 겪은 업무를 기준으로 답해주세요. 좋은 이야기와 불편한 이야기 모두
-              필요합니다. 다만 특정 개인 이름보다 반복되는 상황, 기준, 흐름 중심으로 적어주세요.
+              최근 6주 동안 실제로 겪은 업무를 기준으로 답해주세요. 특정 개인 이름보다 반복되는 상황,
+              기준, 흐름 중심으로 적어주세요.
             </p>
           </section>
 
           <div className={styles.principles}>
             <div>
               <strong>개인 평가 금지</strong>
-              <span>응답은 특정 개인이나 직군의 성과 평가에 사용하지 않습니다.</span>
+              <span>응답은 특정 개인이나 직군 평가에 사용하지 않습니다.</span>
             </div>
             <div>
               <strong>정답 없음</strong>
-              <span>많이 아는 답보다 본인이 실제로 체감한 경험이 중요합니다.</span>
+              <span>본인이 실제로 체감한 경험이 중요합니다.</span>
             </div>
             <div>
               <strong>같은 기기에서 이어하기</strong>
@@ -96,8 +96,8 @@ export default function Landing() {
           </Button>
 
           <p className={styles.footnote}>
-            이름이나 사번을 입력하지 않습니다. 휴대폰과 PC를 바꿔 접속하면 별도 응답으로 시작될 수 있으니,
-            가능하면 한 기기에서 끝까지 진행해주세요.
+            이름이나 사번을 입력하지 않습니다. 휴대폰과 PC를 바꿔 접속하면 별도 응답으로 시작될 수 있으니
+            가능하면 한 기기에서 진행해주세요.
           </p>
         </Panel>
       </div>

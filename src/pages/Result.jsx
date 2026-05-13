@@ -10,13 +10,19 @@ import {
 import { Bar } from 'react-chartjs-2';
 import Button from '../components/common/Button';
 import { AppShell, PageHeader, Panel } from '../components/common/Layout';
-import { questions, surveyInfo } from '../data/questions';
+import { QUESTION_VERSION, questions, surveyInfo } from '../data/questions';
 import {
   analysisService,
   respondentService,
   responseService,
 } from '../firebase/config';
-import { buildAiAnalysisPayload, buildDashboardStats, formatAverage, toPercent } from '../utils/analytics';
+import {
+  buildAiAnalysisPayload,
+  buildDashboardStats,
+  filterCurrentSurveyData,
+  formatAverage,
+  toPercent,
+} from '../utils/analytics';
 import { requestWorkshopAnalysis } from '../utils/openaiAnalysis';
 import styles from './Result.module.css';
 
@@ -561,6 +567,31 @@ function getStoredReport(analysis, type) {
   return null;
 }
 
+function reportMatchesCurrentQuestions(report) {
+  return report?.inputSummary?.questionVersion === QUESTION_VERSION;
+}
+
+function analysisMatchesCurrentQuestions(analysis) {
+  if (!analysis) return null;
+  if (analysis.reports) {
+    const reports = Object.fromEntries(
+      Object.entries(analysis.reports).filter(([, report]) => reportMatchesCurrentQuestions(report)),
+    );
+    if (!Object.keys(reports).length) return null;
+    const primary = reports.comprehensive || reports.closedEnded || reports.textByQuestion;
+    return {
+      ...analysis,
+      result: primary?.result,
+      model: primary?.model,
+      reasoningEffort: primary?.reasoningEffort,
+      analyzedAt: primary?.analyzedAt || analysis.analyzedAt,
+      inputSummary: primary?.inputSummary || analysis.inputSummary,
+      reports,
+    };
+  }
+  return reportMatchesCurrentQuestions(analysis) ? analysis : null;
+}
+
 function mergeAnalysisReport(existingAnalysis, report) {
   const previousReports = existingAnalysis?.reports ? { ...existingAnalysis.reports } : {};
   if (!previousReports.comprehensive && existingAnalysis?.result && !existingAnalysis.reports) {
@@ -623,9 +654,10 @@ export default function Result() {
         respondentService.getAllRespondents(),
         analysisService.getComprehensiveAnalysis(),
       ]);
-      setAllResponses(responses || {});
-      setRespondents(respondentData || {});
-      setAnalysis(analysisData || null);
+      const currentData = filterCurrentSurveyData(responses || {}, respondentData || {});
+      setAllResponses(currentData.responses);
+      setRespondents(currentData.respondents);
+      setAnalysis(analysisMatchesCurrentQuestions(analysisData));
     } catch (err) {
       console.error(err);
       setDataError(err.message || '결과 데이터를 불러오지 못했습니다. 네트워크 연결을 확인한 뒤 다시 시도해주세요.');

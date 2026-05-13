@@ -63,6 +63,12 @@ Do not commit `.env.local`, OpenAI keys, Firebase service account JSON files, or
 
 ## Deployment
 
-GitHub Pages builds through `.github/workflows/deploy.yml`. The workflow is manual (`workflow_dispatch`) because this private repository's current GitHub plan returned `Pages not supported` when Pages enablement was attempted.
+GitHub Pages builds through `.github/workflows/deploy.yml`. The workflow is manual (`workflow_dispatch`) so deployment happens only when the survey is intentionally released.
 
-After Pages support is enabled for the repo, run the workflow from the Actions tab. The workflow builds the production survey app so team members can open the GitHub Pages URL from their phone or computer and save responses without local setup. Report generation keys, GitHub tokens, and Firebase service account JSON files must remain outside the repo.
+Production URL:
+
+- https://str-nrm.github.io/workshop-2026-2Q-1/
+
+The workflow builds the production survey app so team members can open the GitHub Pages URL from their phone or computer and save responses without local setup. Report generation keys, GitHub tokens, and Firebase service account JSON files must remain outside the repo.
+
+Result pages, exports, and AI report generation use only responses from the current question version. Older local QA or seed responses remain in the database if they were not deleted, but they are not mixed into the current survey result.

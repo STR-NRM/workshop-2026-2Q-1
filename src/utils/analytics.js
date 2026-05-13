@@ -210,6 +210,29 @@ export function buildDashboardStats(allResponses = {}, respondents = {}) {
   };
 }
 
+export function filterCurrentSurveyData(allResponses = {}, respondents = {}) {
+  const currentResponses = {};
+
+  Object.entries(allResponses || {}).forEach(([uid, responses]) => {
+    const entries = Object.entries(responses || {}).filter(([, response]) => (
+      response?.questionVersion === QUESTION_VERSION
+    ));
+    if (entries.length) currentResponses[uid] = Object.fromEntries(entries);
+  });
+
+  const currentRespondents = {};
+  Object.entries(respondents || {}).forEach(([uid, respondent]) => {
+    if (respondent?.questionVersion === QUESTION_VERSION || currentResponses[uid]) {
+      currentRespondents[uid] = respondent;
+    }
+  });
+
+  return {
+    responses: currentResponses,
+    respondents: currentRespondents,
+  };
+}
+
 function roundMetric(value) {
   if (value === null || value === undefined || Number.isNaN(value)) return null;
   return Math.round(value * 100) / 100;
@@ -221,7 +244,9 @@ function summarizeQuestionStat(stat) {
     id: question.id,
     section: question.section,
     role: question.role || null,
+    roles: question.roles || null,
     condition: question.condition || null,
+    externalOptions: question.externalOptions || null,
     type: question.type,
     title: question.title,
     question: question.question,

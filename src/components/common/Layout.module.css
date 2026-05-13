@@ -62,10 +62,10 @@
 
 @media (max-width: 480px) {
   .shell {
-    padding: 18px 12px 40px;
+    padding: 28px 18px 44px;
   }
 
   .title {
-    font-size: 25px;
+    font-size: 24px;
   }
 }

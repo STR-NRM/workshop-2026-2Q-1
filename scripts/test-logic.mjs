@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import {
+  QUESTION_VERSION,
   getVisibleQuestions,
   hasCbtModule,
+  hasAnyExternalOption,
   hasExternalModule,
   isAnswered,
   questions,
 } from '../src/data/questions.js';
 import {
   buildDashboardStats,
+  filterCurrentSurveyData,
   getChoiceStats,
   getScaleStats,
   normalizeResponseValue,
@@ -16,6 +19,8 @@ import { requestWorkshopAnalysis } from '../src/utils/openaiAnalysis.js';
 
 assert.equal(hasExternalModule({ META_EXTERNAL: ['특별히 없음'] }), false);
 assert.equal(hasExternalModule({ META_EXTERNAL: ['서비스/디자인'] }), true);
+assert.equal(hasAnyExternalOption({ META_EXTERNAL: ['서비스/디자인'] }, ['서비스/디자인']), true);
+assert.equal(hasAnyExternalOption({ META_EXTERNAL: ['서비스/디자인'] }, ['개발운영/인프라']), false);
 assert.equal(hasCbtModule({ META_CBT: '예' }), true);
 assert.equal(hasCbtModule({ META_CBT: '아니오' }), false);
 assert.equal(questions.some((question) => question.options?.includes('응답하지 않음')), false);
@@ -36,8 +41,23 @@ const visible = getVisibleQuestions({
 assert.ok(visible.some((question) => question.id === 'WEB01'));
 assert.ok(visible.some((question) => question.id === 'EXT01'));
 assert.ok(visible.some((question) => question.id === 'CBT01'));
+assert.ok(visible.some((question) => question.id === 'E02'));
+assert.ok(visible.some((question) => question.id === 'E03'));
+assert.ok(visible.some((question) => question.id === 'E04'));
+assert.ok(visible.some((question) => question.id === 'G01'));
 assert.ok(!visible.some((question) => question.id === 'PM01'));
 assert.ok(!visible.some((question) => question.id === 'AI01'));
+assert.ok(!visible.some((question) => question.id === 'E05'));
+
+const pmVisible = getVisibleQuestions({ META_ROLE: '제품/PM/프롬프트' });
+assert.ok(pmVisible.some((question) => question.id === 'E01'));
+assert.ok(pmVisible.some((question) => question.id === 'G04'));
+assert.ok(!pmVisible.some((question) => question.id === 'G01'));
+
+const otherVisible = getVisibleQuestions({ CHOICE06: '기타' });
+assert.ok(otherVisible.some((question) => question.id === 'CHOICE06_OTHER'));
+const notOtherVisible = getVisibleQuestions({ CHOICE06: '개발/운영' });
+assert.ok(!notOtherVisible.some((question) => question.id === 'CHOICE06_OTHER'));
 
 const textQuestion = questions.find((question) => question.id === 'TEXT01');
 assert.equal(isAnswered(textQuestion, '짧음'), false);
@@ -57,6 +77,19 @@ const choices = getChoiceStats([['AI Agent', 'AI Viewer'], ['AI Agent'], 'AI Edi
 assert.equal(choices['AI Agent'], 2);
 assert.equal(choices['AI Viewer'], 1);
 assert.equal(choices['AI Editor'], 1);
+
+const currentOnly = filterCurrentSurveyData(
+  {
+    currentUser: { A01: { value: 4, questionVersion: QUESTION_VERSION } },
+    oldUser: { A01: { value: 1, questionVersion: '2026-05-13-v1.3' } },
+  },
+  {
+    currentUser: { completed: true, questionVersion: QUESTION_VERSION },
+    oldUser: { completed: true, questionVersion: '2026-05-13-v1.3' },
+  },
+);
+assert.deepEqual(Object.keys(currentOnly.responses), ['currentUser']);
+assert.deepEqual(Object.keys(currentOnly.respondents), ['currentUser']);
 
 const dashboard = buildDashboardStats(
   {

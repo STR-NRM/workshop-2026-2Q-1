@@ -129,17 +129,28 @@
 @media (max-width: 480px) {
   .content {
     min-height: auto;
+    gap: 6px;
   }
 
   .focusGrid {
     grid-template-columns: 1fr;
   }
 
+  .heroNote {
+    padding: 22px 18px;
+  }
+
   .heroNote strong {
-    font-size: 21px;
+    font-size: 20px;
   }
 
   .panel {
-    padding: 20px 16px;
+    gap: 20px;
+    padding: 22px 18px;
+  }
+
+  .focusGrid div {
+    min-height: auto;
+    padding: 16px;
   }
 }

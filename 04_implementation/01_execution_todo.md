@@ -2,7 +2,7 @@
 
 - 최초 작성일자: 2026-05-12
 - 업데이트일자: 2026-05-13
-- 업데이트 내용: v2.1 사용자 화면 문구 전수 점검 결과 반영. 설문, 결과, AI 리포트 명칭을 쉬운 한국어 기준으로 통일.
+- 업데이트 내용: v2.2 역할/경험 기반 E/G 문항 분기, 워크샵 토론 주제 기타 입력, 모바일 랜딩 여백 개선, 현재 문항 버전 기준 결과 집계 반영.
 - 작성자: Codex
 - 적용 대상: `workshop-2026-2Q-1` production-ready 개발
 
@@ -31,8 +31,11 @@
 - [x] 최종 source of truth 기반 `src/data/questions.js` 재작성
 - [x] 문항 ID 중복 검증 스크립트 작성
 - [x] 직무별 문항 분기 구현
+- [x] E/G 문항을 관련 직무/협업 경험 기준으로 재분기
 - [x] 타팀 협업 추가 문항 분기 구현
 - [x] CBT(사전 테스트) 추가 문항 분기 구현
+- [x] 워크샵 토론 주제 `기타` 선택 시 주관식 입력 노출
+- [x] 숨겨진 조건부 문항의 이전 응답이 결과에 섞이지 않도록 저장 응답 정리
 - [x] `scale5na`, `singleChoice`, `multiChoice`, `longText` UI 구현
 - [x] 필수/선택/최소 길이 검증 구현
 - [x] 진행률을 현재 응답자 visible questions 기준으로 계산
@@ -58,6 +61,7 @@
 - [x] 저장 상태와 오류 상태 표시
 - [x] 완료 페이지 재작성
 - [x] 모바일 overflow/터치 영역 확인
+- [x] 모바일 랜딩 상하좌우 여백과 설명 길이 재조정
 
 ### Phase 4. 결과와 분석
 
@@ -89,6 +93,7 @@
 - [x] 결과 화면 테스트
 - [x] stale 문자열/secret 패턴 검사
 - [x] 발견 이슈 수정 후 테스트 반복
+- [x] 결과/내보내기/AI 분석을 현재 문항 버전 응답으로 제한
 
 ### Phase 6. 외부 연동
 
@@ -99,7 +104,7 @@
 - [x] Anonymous Auth 활성화
 - [x] RTDB rules 배포
 - [x] GitHub Pages workflow에 Firebase 빌드 환경값 반영
-- [x] 현재 private repo plan의 Pages 미지원 상태 확인
+- [x] repo public 전환 후 GitHub Pages 활성화
 - [x] 유료 전환 요구 시 중단 후 사용자 확인
 - [x] GitHub 인증 상태 확인
 - [x] 로컬 작업 브랜치 생성
@@ -116,14 +121,15 @@
 - Firebase rules: `firebase/database.rules.json` 배포 완료.
 - Firebase local config: `.env.local`에만 저장했고 git에는 포함하지 않음.
 - GitHub Pages build: workflow에 공개 가능한 데이터 저장 설정을 넣어 Pages 배포본이 별도 로컬 설정 없이 응답을 저장하도록 수정.
-- GitHub Pages enablement: API 활성화 시도 결과 현재 private repo plan에서 Pages 미지원. 자동 push 트리거는 실패를 반복하지 않도록 제거하고 수동 실행으로 제한.
+- GitHub Pages enablement: repo public 전환 후 GitHub Actions 기반 Pages 활성화 완료.
+- GitHub Pages URL: `https://str-nrm.github.io/workshop-2026-2Q-1/`
 - GitHub CLI: 로그인 완료. `repo`, `workflow` 권한 확인.
 - GitHub push/merge: `main`과 `codex/build-workshop-2026-2q-1`에 push 완료. 원격 기본 브랜치는 `main`.
 - AI 분석: 서버 함수 없이 결과 화면에서 진행자가 리포트를 생성하고 결과만 저장하는 방식으로 단순화.
 - 로컬 QA: `VITE_USE_LOCAL_STORE=true`로 설문 완주와 결과 화면 확인 완료.
 - Firebase QA: Node SDK 익명 로그인 성공, Chrome에서 실제 저장 설정 기준 설문 시작 및 RTDB respondent write 확인 후 테스트 respondent 삭제 완료.
 - Browser plugin QA 참고: Codex 인앱 브라우저에서는 Firebase Auth 네트워크 오류가 발생했으나, 동일 설정이 Node SDK와 사용자의 Chrome에서는 정상 동작했다.
-- Firebase seed QA: `seed-2026-05-13-realistic-10` 배치로 10명치 completed 응답 추가 완료. 기존 응답 2건을 보존해 현재 Firebase 총 응답 시작 건은 12건이다.
+- Firebase seed QA: `seed-2026-05-13-realistic-10` 배치로 10명치 completed 응답 추가 완료. 현재 앱 결과는 문항 버전이 일치하는 응답만 집계하므로 이전 테스트 응답은 새 결과에 섞이지 않는다.
 
 ## 2. 완료 기준
 
