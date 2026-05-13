@@ -690,6 +690,13 @@
   color: var(--surface);
 }
 
+.reportBody .reportHeroConclusion strong,
+.reportBody .reportCalloutSuggestion strong,
+.reportBody h2 strong,
+.reportBody .reportTable th strong {
+  color: var(--surface);
+}
+
 .reportCalloutConclusion {
   background: var(--surface-muted);
 }
